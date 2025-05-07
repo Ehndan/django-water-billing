@@ -1,0 +1,43 @@
+{% extends 'billing_app/dashboard.html' %}
+
+{% block content %}
+{% if messages %}
+  {% for message in messages %}
+    <script type="text/javascript">
+      window.onload = function() {
+          alert("{{ message|escapejs }}");
+      };
+    </script>
+  {% endfor %}
+{% endif %}
+
+<body>
+<h2>Add Consumer</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    <label>Name:</label>
+    {{ form.name }}  <!-- This renders the 'name' field -->
+    <br><br>
+
+    <label>Address:</label>
+    {{ form.address }}  <!-- This renders the 'address' field -->
+    <br><br>
+
+    <label>Contact Number:</label>
+    {{ form.contact_number }}  <!-- This renders the 'contact_number' field -->
+    <br><br>
+
+    <label>Status:</label>
+    {{ form.status }}  <!-- This renders the 'status' dropdown -->
+    <br><br>
+
+    <button type="submit">Add</button>
+</form>
+
+<br>
+<a href="{% url 'dashboard' %}">
+  <button>Back</button>
+</a>
+</body>
+{% endblock %}

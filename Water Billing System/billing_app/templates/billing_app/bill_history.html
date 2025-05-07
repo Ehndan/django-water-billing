@@ -1,0 +1,81 @@
+{% extends 'billing_app/dashboard.html' %}
+
+{% block content %}
+{% if messages %}
+  {% for message in messages %}
+    <script type="text/javascript">
+      window.onload = function() {
+          alert("{{ message|escapejs }}");
+      };
+    </script>
+  {% endfor %}
+{% endif %}
+
+<h1>Bill History</h1>
+<br>
+
+<table border="1">
+    <tr>
+        <th>Consumer</th>
+        <th>Billing Period</th>
+        <th>Amount Paid</th>
+        <th>Status</th>
+        <th>Due Date</th>
+        <th>Generated At</th>
+    </tr>
+    {% for bill in page_obj %}
+    <tr>
+        <td>{{ bill.consumer.name }}</td>
+        <td>{{ bill.billing_period }}</td>
+        <td>{{ bill.amount_due }}</td>
+        <td>{{ bill.status }}</td>
+        <td>{{ bill.due_date }}</td>
+        <td>{{ bill.generated_at }}</td>
+    </tr>
+    {% endfor %}
+    {% for i in empty_rows %}
+      <tr>
+        <td>&nbsp;</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      {% endfor %}
+</table>
+
+<br>
+<div class="pagination">
+  <button 
+    {% if not page_obj.has_previous %}disabled{% else %}
+    onclick="location.href='?page=1'"
+    {% endif %}>
+    <<
+  </button>
+
+  <button 
+    {% if not page_obj.has_previous %}disabled{% else %}
+    onclick="location.href='?page={{ page_obj.previous_page_number }}'"
+    {% endif %}>
+    <
+  </button>
+
+  Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+
+  <button 
+    {% if not page_obj.has_next %}disabled{% else %}
+    onclick="location.href='?page={{ page_obj.next_page_number }}'"
+    {% endif %}>
+    >
+  </button>
+
+  <button 
+    {% if not page_obj.has_next %}disabled{% else %}
+    onclick="location.href='?page={{ page_obj.paginator.num_pages }}'"
+    {% endif %}>
+    >>
+  </button>
+</div>
+
+{% endblock %}

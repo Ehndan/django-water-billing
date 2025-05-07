@@ -1,0 +1,101 @@
+{% extends 'billing_app/dashboard.html' %}
+<div style="background-color: orange; width: 100%;">
+{% block content %}
+
+
+<h1>Ongoing Bills</h1>
+
+<a href="{% url 'generate_bill' %}">
+    <button>Generate</button>
+</a>
+<br>
+
+<!-- Bill List Table -->
+<table border="1">
+    <tr>
+        <th>Consumer</th>
+        <th>Billing Period</th>
+        <th>Consumption</th>
+        <th>Amount Due</th>
+        <th>Status</th>
+        <th>Due Date</th>
+        <th>Generated At</th>   
+        <th>Actions</th>
+    </tr>
+    {% for bill in page_obj %}
+    <tr>
+        <td>{{ bill.consumer.name }}</td>
+        <td>{{ bill.billing_period }}</td>
+        <td>
+            {% if bill.consumption == "N/A" %}
+                N/A
+            {% else %}
+                {{ bill.consumption|floatformat:2 }} m³
+            {% endif %}
+        </td>
+        <td>{{ bill.amount_due }}</td>
+        <td>{{ bill.status }}</td>
+        <td>{{ bill.due_date }}</td>
+        <td>{{ bill.generated_at }}</td>
+        <td>
+            {% if bill.status == 'Unpaid' %}
+            <form method="POST" action="{% url 'mark_bill_paid' bill.id %}">
+                {% csrf_token %}
+                <button type="submit">Mark as Paid</button>
+            </form>
+            {% else %}
+            Paid
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    
+    {% for _ in empty_rows %}
+        <tr>
+            <td>&nbsp;</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        {% endfor %}
+</table>
+
+<br>
+<!-- Pagination controls -->
+<div class="pagination">
+    <button 
+      {% if not page_obj.has_previous %}disabled{% else %}
+      onclick="location.href='?page=1'"
+      {% endif %}>
+      <<
+    </button>
+  
+    <button 
+      {% if not page_obj.has_previous %}disabled{% else %}
+      onclick="location.href='?page={{ page_obj.previous_page_number }}'"
+      {% endif %}>
+      <
+    </button>
+  
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+  
+    <button 
+      {% if not page_obj.has_next %}disabled{% else %}
+      onclick="location.href='?page={{ page_obj.next_page_number }}'"
+      {% endif %}>
+      >
+    </button>
+  
+    <button 
+      {% if not page_obj.has_next %}disabled{% else %}
+      onclick="location.href='?page={{ page_obj.paginator.num_pages }}'"
+      {% endif %}>
+      >>
+    </button>
+  </div>
+
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'billing_app/dashboard.html' %}
+
+{% block content %}
+<h2>Billing Records for {{ consumer.name }}</h2>
+<p>Address: {{ consumer.address }}</p>
+<p>Status: {{ consumer.status }}</p>
+
+<style>
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  table th, table td {
+    padding: 8px;
+    text-align: left;
+  }
+</style>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Billing Period</th>
+      <th>Amount Due</th>
+      <th>Due Date</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for bill in bills %}
+    <tr>
+      <td>{{ bill.billing_period|date:"F Y" }}</td>
+      <td>₱{{ bill.amount_due }}</td>
+      <td>{{ bill.due_date }}</td>
+      <td>{{ bill.status }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4">No bill records found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

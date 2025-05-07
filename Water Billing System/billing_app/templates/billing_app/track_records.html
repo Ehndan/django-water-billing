@@ -1,0 +1,60 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=width=device-width, initial-scale=1.0">
+    <link href="{% static 'billing_app/css/track_records.css' %}" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <title>Document</title>
+</head>
+<body>
+    
+    <body>
+        <div class="main-container"> <!-- spent hours to find this problem brruuuhhh--> 
+          <div class="persona">
+            <img src="Images/Test_profile.jpg" alt="customer_identity" class="profile_pic" />
+            <h3>Dan Fernandez</h3>
+            <p>Contact: 08842542536</p>
+            <button class="complaint" onclick="">File Complaint</button>
+            <button class="exit" onclick="">Log Out</button>
+          </div>
+      
+          <div class="content">
+            <div class="search">
+                <h2>Billing Records</h2>
+                <input type="text" placeholder = "Search by date">
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Billing Period</th>
+                    <th>Consumption</th>
+                    <th>Amount Due</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Additional Fee</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!--<tr>
+                    <td>Dan</td>
+                    <td>Mahayahay, House 2</td>
+                    <td>2-10-2025</td>
+                    <td>100</td>
+                    <td>Disconnected</td>
+                    <td>100 reconnection fee</td>
+                  </tr>  Diri mo allocated ang data sa backend-->
+                </tbody>
+              </table>
+            </div>
+          </div>
+      
+        </div>
+      </body>
+      
+       <script src = "jscript/script.js"></script>
+</body>
+</html>

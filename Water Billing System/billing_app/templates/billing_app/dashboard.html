@@ -1,0 +1,356 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            padding: 8px;
+            text-align: left;
+        }
+                *{
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .main_content {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* Add this to your CSS file or inside a <style> tag */
+
+        .center {
+            text-align: center;
+            margin: 5px 0; /* Reduce vertical gap */
+        }
+        
+        /* Optional: if needed for better alignment control */
+        .options h3.center,
+        .options p.center {
+            width: 100%;
+        }
+
+        /* Left Sidebar */
+        .options {
+            background: linear-gradient(135deg,#007BFF, #3094ff);
+            width: 20%;
+            padding: 30px 15px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Align everything to the left */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Buttons */
+        .options button {
+            background-color: transparent;
+            color: #f0f0f0;
+            border: none;
+            padding: 10px 10px 10px 30px; /* Padding left for future icon */
+            margin: 6px 0;
+            width: 100%;
+            text-align: left;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.2s ease, background-color 0.2s ease;
+            position: relative;
+        }
+
+        .options button:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+        }
+
+        /* Separator headings */
+        .separator {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            width: 100%;
+            font-size: 14px;
+            text-align: left;
+            font-weight: bold;
+            color:#daeaff;
+            border-bottom: 1px solid #0068d8;
+            padding-bottom: 6px;
+        }
+        
+        /* Right Content Area */
+        .right_content {
+            width: 100;
+            padding: 20px;
+            background-color: rgb(255, 255, 255);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        /* Top add content */
+        .add_content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgb(107, 102, 102);
+            background-color: #ee9b00;
+            padding: 10px;
+        }
+        
+        .add {
+            display: flex;
+            align-items: center;
+            background-color: rgb(3, 3, 163);
+            border-radius: 6px;
+            padding: 12px 10px;
+            color: white;
+        }
+        
+        .add i, .add button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .bill_info {
+            margin-top: 20px;
+        }
+        
+        .bill_info .search {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .search-box {
+            position: relative;
+            width: 250px;
+        }
+
+        .search-box i {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .search-box input {
+            width: 70%;
+            padding: 8px 8px 8px 32px; /* left padding for icon */
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        thead {
+            background-color: #f2f2f2;
+        }
+        
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        } 
+
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none; /* SO this thing wont appear first bruh */
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .modal-content {
+        background: white;
+        padding: 20px;
+        width: 300px;
+        border-radius: 8px;
+        align-items: center;
+        }
+
+        .modal-content input {
+        display: block;
+        width: 90%;
+        padding: 8px;
+        margin-bottom: 10px;
+        }
+
+        .modal-content button {
+            padding : 6px;
+            align-items: center;
+            width: 120px;
+        }
+
+
+        /* Popup Container */
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.4);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        /* Inner Content Box */
+        .popup-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 500px;
+            max-width: 90%;
+            position: relative;
+        }
+        
+        /* Close Button */
+        .popup .close {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .navbar {
+            width: 100%;
+            padding: 15px 20px;
+            background-color: #0047ab;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar i {
+            margin-right: 10px;
+        }
+
+        .user-dropdown {
+            position: relative;
+            display: inline-block;
+            margin-left: auto;
+        }
+
+        .dropdown-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 8px;
+            color: white;
+            margin-right: 20px;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 100px;
+            right: 0;
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 10px;
+            text-decoration: none;
+            color: black;
+        }
+
+        .user-dropdown:hover .dropdown-menu {
+            display: block;
+        }  
+    </style>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'billing_app/css/dashboard.css' %}" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
+    <title>Billing System</title>
+</head>
+<body>
+    <div class="main_content">
+        <div class="options">
+            <h3 class="separator"> Main </h3>
+        
+            <a href="{% url 'bill_list' %}" class="intro"><button>Ongoing Bills</button></a>
+            <a href="{% url 'bill_history' %}"><button>Bill History</button></a>
+        
+            <h3 class="separator">Concessionaire</h3>
+            <a href="{% url 'list_consumers' %}"><button>List of Consumers</button></a>
+        </div>
+
+        <div class="content_wrapper" style="width: 100%; display: flex; flex-direction: column;">
+            <div class="navbar">
+                <div class="user-dropdown"> 
+                    <button class="dropdown-toggle">
+                        {{ request.user.username }} <i class="fa fa-caret-down"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="{% url 'logout' %}">Logout</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right_content" id="right_content">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loadContent(page) {
+            fetch(`/${page}/`)
+            .then(response => {
+                if (!response.ok) throw new Error("Page not found");
+                return response.text();
+            })
+            .then(html => {
+                document.getElementById("right_content").innerHTML = html;
+            })
+            .catch(err => {
+                document.getElementById("right_content").innerHTML = "<p>Error loading page.</p>";
+                console.error(err);
+            });
+        }
+    </script>
+
+    <script src="{% static 'billing_app/js/script.js' %}"></script>
+</body>
+</html>

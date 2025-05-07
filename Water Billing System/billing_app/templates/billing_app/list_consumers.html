@@ -1,0 +1,114 @@
+{% extends 'billing_app/dashboard.html' %}
+
+{% block content %}
+{% if messages %}
+  {% for message in messages %}
+    <script type="text/javascript">
+      window.onload = function() {
+          alert("{{ message|escapejs }}");
+      };
+    </script>
+  {% endfor %}
+{% endif %}
+
+<h1>List of Consumers</h1>
+
+<a href="{% url 'create_consumer' %}">
+  <button>Add</button>
+</a>
+<br>
+
+<form method="get" action="{% url 'list_consumers' %}">
+  <input type="text" name="search" value="{{ search_query }}" placeholder="Search by name">
+  <button type="submit">Search</button>
+</form>
+
+<br>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Address</th>
+      <th>Contact Number</th>
+      <th>Status</th>
+      <th>Meter Number</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for data in page_obj %}
+      <tr>
+        <td>{{ data.consumer.name }}</td>
+        <td>{{ data.consumer.address }}</td>
+        <td>{{ data.consumer.contact_number }}</td>
+        <td>{{ data.consumer.status }}</td>
+        <td>
+          {% if data.latest_reading %}
+            {{ data.latest_reading.meter_number }}
+          {% else %}
+            No Meter Reading
+          {% endif %}
+        </td>
+        <td>
+          <form method="get" action="{% url 'edit_consumer' data.consumer.id %}" style="display:inline;">
+            <button type="submit">Edit</button>
+          </form>
+          <form method="get" action="{% url 'consumer_records' data.consumer.id %}" style="display:inline;">
+            <button type="submit">Records</button>
+          </form>
+        </td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="6">No consumers found.</td>
+      </tr>
+    {% endfor %}
+    {% for _ in empty_rows %}
+        <tr>
+            <td>&nbsp;</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        {% endfor %}
+  </tbody>
+</table>
+
+<br>
+
+<!-- Pagination controls -->
+<div class="pagination">
+  <button 
+    {% if not page_obj.has_previous %}disabled{% else %}
+    onclick="location.href='?page=1{% if search_query %}&search={{ search_query }}{% endif %}'"
+    {% endif %}>
+    <<
+  </button>
+
+  <button 
+    {% if not page_obj.has_previous %}disabled{% else %}
+    onclick="location.href='?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}'"
+    {% endif %}>
+    <
+  </button>
+
+  Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+
+  <button 
+    {% if not page_obj.has_next %}disabled{% else %}
+    onclick="location.href='?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}'"
+    {% endif %}>
+    >
+  </button>
+
+  <button 
+    {% if not page_obj.has_next %}disabled{% else %}
+    onclick="location.href='?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}'"
+    {% endif %}>
+    >>
+  </button>
+</div>
+{% endblock %}
