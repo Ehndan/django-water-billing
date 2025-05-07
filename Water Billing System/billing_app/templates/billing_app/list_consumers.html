@@ -28,6 +28,7 @@
 <table border="1">
   <thead>
     <tr>
+      <th>ID</th>
       <th>Name</th>
       <th>Address</th>
       <th>Contact Number</th>
@@ -39,6 +40,7 @@
   <tbody>
     {% for data in page_obj %}
       <tr>
+        <td>{{ data.consumer.id }}</td> <!-- Displaying Consumer ID -->
         <td>{{ data.consumer.name }}</td>
         <td>{{ data.consumer.address }}</td>
         <td>{{ data.consumer.contact_number }}</td>
@@ -61,7 +63,7 @@
       </tr>
     {% empty %}
       <tr>
-        <td colspan="6">No consumers found.</td>
+        <td colspan="7">No consumers found.</td>
       </tr>
     {% endfor %}
     {% for _ in empty_rows %}
@@ -72,8 +74,9 @@
             <td></td>
             <td></td>
             <td></td>
+            <td></td>
         </tr>
-        {% endfor %}
+    {% endfor %}
   </tbody>
 </table>
 

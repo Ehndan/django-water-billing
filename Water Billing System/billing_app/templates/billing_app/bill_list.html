@@ -13,6 +13,7 @@
 <!-- Bill List Table -->
 <table border="1">
     <tr>
+        <th>Bill ID</th> <!-- Added -->
         <th>Consumer</th>
         <th>Billing Period</th>
         <th>Consumption</th>
@@ -24,8 +25,9 @@
     </tr>
     {% for bill in page_obj %}
     <tr>
+        <td>{{ bill.id }}</td> <!-- Added -->
         <td>{{ bill.consumer.name }}</td>
-        <td>{{ bill.billing_period }}</td>
+        <td>{{ bill.billing_period|date:"F Y" }}</td>
         <td>
             {% if bill.consumption == "N/A" %}
                 N/A
@@ -33,10 +35,10 @@
                 {{ bill.consumption|floatformat:2 }} m³
             {% endif %}
         </td>
-        <td>{{ bill.amount_due }}</td>
+        <td>₱{{ bill.amount_due }}</td>
         <td>{{ bill.status }}</td>
         <td>{{ bill.due_date }}</td>
-        <td>{{ bill.generated_at }}</td>
+        <td>{{ bill.generated_at|date:"Y-m-d H:i" }}</td>
         <td>
             {% if bill.status == 'Unpaid' %}
             <form method="POST" action="{% url 'mark_bill_paid' bill.id %}">
@@ -53,6 +55,7 @@
     {% for _ in empty_rows %}
         <tr>
             <td>&nbsp;</td>
+            <td></td>
             <td></td>
             <td></td>
             <td></td>

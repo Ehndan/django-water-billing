@@ -244,7 +244,16 @@ def get_previous_reading(request):
     return JsonResponse({'previous_reading': last.current_reading if last else 0.0})
 
 def billing_tracker(request):
-    return render(request, 'billing_app/bill_track.html')
+    context = {'searched': False}
+    if request.method == "POST":
+        bill_id = request.POST.get("bill_id")
+        context['searched'] = True
+        try:
+            bill = Bill.objects.get(id=bill_id)
+            context['bill'] = bill
+        except Bill.DoesNotExist:
+            context['bill'] = None
+    return render(request, 'billing_app/bill_track.html', context)
 
 @require_GET
 def validate_id(request):

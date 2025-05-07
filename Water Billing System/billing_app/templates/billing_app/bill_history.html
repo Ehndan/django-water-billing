@@ -15,27 +15,30 @@
 <br>
 
 <table border="1">
-    <tr>
-        <th>Consumer</th>
-        <th>Billing Period</th>
-        <th>Amount Paid</th>
-        <th>Status</th>
-        <th>Due Date</th>
-        <th>Generated At</th>
-    </tr>
-    {% for bill in page_obj %}
-    <tr>
-        <td>{{ bill.consumer.name }}</td>
-        <td>{{ bill.billing_period }}</td>
-        <td>{{ bill.amount_due }}</td>
-        <td>{{ bill.status }}</td>
-        <td>{{ bill.due_date }}</td>
-        <td>{{ bill.generated_at }}</td>
-    </tr>
-    {% endfor %}
+  <tr>
+      <th>Bill ID</th> <!-- Added -->
+      <th>Consumer</th>
+      <th>Billing Period</th>
+      <th>Amount Paid</th>
+      <th>Status</th>
+      <th>Due Date</th>
+      <th>Generated At</th>
+  </tr>
+  {% for bill in page_obj %}
+  <tr>
+      <td>{{ bill.id }}</td>
+      <td>{{ bill.consumer.name }}</td>
+      <td>{{ bill.billing_period|date:"F Y" }}</td>
+      <td>₱{{ bill.amount_due }}</td>
+      <td>{{ bill.status }}</td>
+      <td>{{ bill.due_date }}</td>
+      <td>{{ bill.generated_at|date:"Y-m-d H:i" }}</td>
+  </tr>
+  {% endfor %}
     {% for i in empty_rows %}
       <tr>
         <td>&nbsp;</td>
+        <td></td>
         <td></td>
         <td></td>
         <td></td>

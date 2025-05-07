@@ -1,31 +1,33 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="{% static 'billing_app/css/bill_tracker.css' %}" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
-    <title>Billing Tracker</title>
+    <title>Track Water Bill</title>
+    <style>
+        body { font-family: Roboto, sans-serif; padding: 20px; }
+        input, button { padding: 8px; margin: 5px; }
+        .bill-info { margin-top: 20px; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="content">
-            <h1>Billing Trackers</h1>
-            <div class="function">
-                <input type="text" id = "user_id" placeholder="Enter Id">
-                <div class="submit">
-                    <button type="button" onclick="validID()">Submit</button>
+    <h2>Track Your Bill</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="bill_id" placeholder="Enter Bill ID" required>
+        <button type="submit">Search</button>
+    </form>
 
-                </div>
-            </div>
-            <div class="code_scan">
-                <a onclick = "qr_scan()" target = "_self">Scan QR Code</a>
-            </div>
-        </div>
+    {% if bill %}
+    <div class="bill-info">
+        <p><strong>Bill ID:</strong> {{ bill.id }}</p>
+        <p><strong>Consumer:</strong> {{ bill.consumer.name }}</p>
+        <p><strong>Billing Period:</strong> {{ bill.billing_period|date:"F Y" }}</p>
+        <p><strong>Amount Due:</strong> ₱{{ bill.amount_due }}</p>
+        <p><strong>Status:</strong> {{ bill.status }}</p>
+        <p><strong>Due Date:</strong> {{ bill.due_date }}</p>
     </div>
-
-    <script src = "{% static 'billing_app/js/tracker.js' %}"></script>
-
+    {% elif searched %}
+        <p>No bill found with that ID.</p>
+    {% endif %}
 </body>
 </html>
