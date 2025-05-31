@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mahayahay Water Billing{% endblock %}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% if 'login' in request.path or 'dashboard' in request.path %}login-body{% endif %}">
+    <nav class="public-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="/static/images/logo.png" alt="Logo" class="nav-logo">
+                <img src="/static/images/logo_text_alt.png" alt="Logo-text" class="nav-logo-text">
+            </div>
+            <div class="nav-links">
+                <a href="{% url 'landing_page' %}" class="nav-link {% if request.path == '/' %}active{% endif %}">Home</a>
+                <a href="{% url 'track_bill' %}" class="nav-link {% if 'track-bill' in request.path %}active{% endif %}">Track Bill</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="nav-link {% if 'dashboard' in request.path %}active{% endif %}">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-link {% if 'login' in request.path %}active{% endif %}">Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content no-sidebar">
+        <div class="content-wrapper">
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block content %}
+            {% endblock %}
+        </div>
+
+        <footer class="footer">
+            <p>&copy; 2025 Barangay Mahayahay. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

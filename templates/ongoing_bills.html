@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+
+{% block title %}Ongoing Bills{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="/static/css/ongoing_bills.css">
+<script src="/static/js/ongoing_bills.js"></script>
+
+<div class="ongoing-bills">
+    <div class="page-header">
+        <h1 class="page-title">Ongoing Bills</h1>
+        <div class="page-actions">
+            <a href="#" class="btn btn-outline-primary" data-action="print-bills">
+                <i class="fas fa-print"></i> Print Bills
+            </a>
+            <a href="#" class="btn btn-primary" data-action="generate-bill">
+                <i class="fas fa-plus"></i> Generate Bill
+            </a>
+        </div>
+    </div>
+
+    <!-- Print Bills Modal -->
+    <div id="print-bills-modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Print Bills</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'print_bills' %}" id="print-bills-form" target="_blank">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label class="form-label">Billing Period</label>
+                        <input type="month" name="billing_period" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Bill Status</label>
+                        <select name="bill_status" class="form-control">
+                            <option value="all">All Bills</option>
+                            <option value="unpaid">Unpaid Bills Only</option>
+                            <option value="paid">Paid Bills Only</option>
+                        </select>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Print</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Modal Structure -->
+    <div id="bill-modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">New Bill</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'generate_bill' %}" id="generate-bill-form">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label class="form-label">Consumer</label>
+                        <select name="consumer" class="form-control" required>
+                            <option value="">Select Consumer</option>
+                            {% for consumer in consumers %}
+                            <option value="{{ consumer.consumer_id }}">
+                                {{ consumer.get_full_name }} ({{ consumer.meter_number }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Billing Period</label>
+                        <input type="month" name="billing_period" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Previous Reading (m³)</label>
+                        <input type="number" name="previous_reading" class="form-control" step="0.1" readonly>
+                        <small class="form-text text-muted">This will be automatically filled based on the last reading</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Current Reading (m³)</label>
+                        <input type="number" name="current_reading" class="form-control" step="0.1" required>
+                        <small class="form-text text-muted">Must be greater than previous reading</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Due Date</label>
+                        <input type="date" name="due_date" class="form-control" required>
+                        <small class="form-text text-muted">Must be after the billing period</small>
+                    </div>
+
+                    <!-- Calculation Preview -->
+                    <div class="calculation-preview">
+                        <h3>Bill Preview</h3>
+                        <div class="preview-row">
+                            <span class="label">Consumption:</span>
+                            <span class="value"><span id="consumption-display">0.0</span> m³</span>
+                        </div>
+                        <div class="preview-row">
+                            <span class="label">Amount:</span>
+                            <span class="value">₱<span id="amount-display">100.00</span></span>
+                        </div>
+                        <div class="preview-info">
+                            <p>Rate: ₱100 for first 10m³, ₱10 per 0.1m³ after</p>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Generate</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <div class="table-header">
+            <div class="table-actions">
+                <div class="search-group">
+                    <div class="input-icon">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="table-search" class="form-control" placeholder="Search consumer...">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <div class="input-icon">
+                        <i class="fas fa-calendar"></i>
+                        <select id="period-filter" class="form-control">
+                            <option value="">All Periods</option>
+                            {% for bill in bills %}
+                            <option value="{{ bill.billing_period|date:'Y-m' }}">
+                                {{ bill.billing_period|date:'F Y' }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table paginated-table">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="bill_id">
+                            Bill ID
+                            <span class="sort-icon"></span>
+                        </th>
+                        <th class="sortable" data-sort="consumer_name">
+                            Consumer Name
+                            <span class="sort-icon"></span>
+                        </th>
+                        <th class="sortable" data-sort="billing_period">
+                            Billing Period
+                            <span class="sort-icon"></span>
+                        </th>
+                        <th class="sortable" data-sort="consumption">
+                            Consumption (m³)
+                            <span class="sort-icon"></span>
+                        </th>
+                        <th class="sortable" data-sort="due_date">
+                            Due Date
+                            <span class="sort-icon"></span>
+                        </th>
+                        <th class="sortable" data-sort="amount">
+                            Amount
+                            <span class="sort-icon"></span>
+                        </th>
+                        <th class="sortable" data-sort="status">
+                            Status
+                            <span class="sort-icon"></span>
+                        </th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bill in bills %}
+                    <tr data-period="{{ bill.billing_period|date:'Y-m' }}">
+                        <td>{{ bill.bill_id }}</td>
+                        <td>{{ bill.consumer.get_full_name }}</td>
+                        <td>{{ bill.billing_period|date:'F Y' }}</td>
+                        <td>{{ bill.meter_reading.consumption }}</td>
+                        <td>{{ bill.due_date|date:'M d, Y' }}</td>
+                        <td>₱{{ bill.amount }}</td>
+                        <td>
+                            <span class="status-badge status-{{ bill.status }}">
+                                {{ bill.status|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-icon btn-primary" 
+                                        data-action="mark-paid"
+                                        data-id="{{ bill.bill_id }}"
+                                        data-consumer="{{ bill.consumer.get_full_name }}"
+                                        data-amount="{{ bill.amount }}"
+                                        title="Mark as Paid">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Mark Bill as Paid Modal -->
+<div id="mark-paid-modal-overlay" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title">Mark Bill as Paid</h2>
+            <button type="button" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <p>Are you sure you want to mark this bill as paid?<br><br>This action cannot be undone.</p>
+            </div>
+            
+            <div class="bill-info">
+                <div class="info-row">
+                    <span class="label">Bill ID:</span>
+                    <span class="value" id="preview-bill-id"></span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Consumer:</span>
+                    <span class="value" id="preview-consumer"></span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Amount:</span>
+                    <span class="value" id="preview-amount"></span>
+                </div>
+            </div>
+
+            <form id="mark-paid-form" method="POST">
+                {% csrf_token %}
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Mark</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %} 

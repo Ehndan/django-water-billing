@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="/static/css/dashboard.css">
+<script src="/static/js/dashboard.js"></script>
+
+<div class="dashboard">
+    <h1 class="page-title">Dashboard</h1>
+    <br>
+    
+    <!-- Stats Grid -->
+    <div class="grid">
+        <div class="stats-card">
+            <div class="stats-card-title">Total Consumers</div>
+            <div class="stats-card-value">{{ total_consumers }}</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-card-title">Active Bills</div>
+            <div class="stats-card-value">{{ active_bills }}</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-card-title">Connected Meters</div>
+            <div class="stats-card-value">{{ connected_meters }}</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-card-title">Total Collections</div>
+            <div class="stats-card-value">₱{{ total_collections }}</div>
+        </div>
+    </div>
+
+    <div class="dashboard-content {% if not user.is_superuser and user.user_type != 'admin' %}full-width{% endif %}">
+        <!-- Bills Table Section -->
+        <div class="bills-section">
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="header-content">
+                        <div class="search-group">
+                            <div class="input-icon">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="table-search" class="form-control" placeholder="Search consumer...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table paginated-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="bill_id">
+                                    Bill ID
+                                    <span class="sort-icon"></span>
+                                </th>
+                                <th class="sortable" data-sort="consumer_name">
+                                    Consumer Name
+                                    <span class="sort-icon"></span>
+                                </th>
+                                <th class="sortable" data-sort="consumption">
+                                    Consumption (m³)
+                                    <span class="sort-icon"></span>
+                                </th>
+                                <th class="sortable" data-sort="due_date">
+                                    Due Date
+                                    <span class="sort-icon"></span>
+                                </th>
+                                <th class="sortable" data-sort="amount">
+                                    Amount
+                                    <span class="sort-icon"></span>
+                                </th>
+                                <th class="sortable" data-sort="status">
+                                    Status
+                                    <span class="sort-icon"></span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bill in ongoing_bills %}
+                            <tr>
+                                <td>{{ bill.bill_id }}</td>
+                                <td>{{ bill.consumer.get_full_name }}</td>
+                                <td>{{ bill.meter_reading.consumption }}</td>
+                                <td>{{ bill.due_date }}</td>
+                                <td>₱{{ bill.amount }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ bill.status }}">
+                                        {{ bill.status|title }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No ongoing bills found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Actions Section -->
+        {% if user.is_superuser or user.user_type == 'admin' %}
+        <div class="admin-section">
+            <h2 class="admin-section-title">Quick Actions</h2>
+            <div class="admin-buttons">
+                <a href="{% url 'print_bills' %}" class="admin-button bills-report">
+                    <i class="fas fa-chart-pie"></i>
+                </a>
+                <a href="/admin/" class="admin-button admin-panel">
+                    <i class="fas fa-user-shield"></i>
+                </a>
+            </div>
+            <div class="chart-section">
+                <canvas id="collectionsChart"></canvas>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Add Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('collectionsChart').getContext('2d');
+    const chartLabels = JSON.parse('{{ chart_labels|safe|escapejs }}');
+    const chartData = JSON.parse('{{ chart_data|safe|escapejs }}');
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                label: 'Monthly Collections',
+                data: chartData,
+                borderColor: '#4CAF50',
+                backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: 'Collections (Last 6 Months)',
+                    font: {
+                        size: 14
+                    },
+                    padding: {
+                        bottom: 15
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₱' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+
+{% endblock %} 

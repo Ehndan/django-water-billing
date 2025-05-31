@@ -1,0 +1,81 @@
+{% extends 'public_base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="/static/css/login.css">
+
+<div class="login-wrapper">
+    <div class="login-container">
+        <div class="form-box">
+            <div class="form-header">
+                <img src="/static/images/logo.png" alt="Logo" class="logo">
+                <h2>Log in to Dashboard</h2>
+            </div>
+
+            <form method="POST" action="{% url 'login' %}">
+                {% csrf_token %}
+                
+                {% if form.errors %}
+                <div class="alert alert-error">
+                    Your username and password didn't match. Please try again.
+                </div>
+                {% endif %}
+
+                {% if next %}
+                    {% if user.is_authenticated %}
+                    <div class="alert alert-error">
+                        Your account doesn't have access to this page.
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        Please login to continue.
+                    </div>
+                    {% endif %}
+                {% endif %}
+
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" name="username" required autofocus>
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+                    <div class="password-input-group">
+                        <input type="password" name="password" id="password" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword()">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <input type="hidden" name="next" value="{{ next }}">
+
+                <div class="forgot-password">
+                    <a href="#" onclick="return false;">Forgot your password?</a>
+                </div>
+
+                <button type="submit" class="login-btn">Login</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    const toggleButton = document.querySelector('.password-toggle i');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleButton.classList.remove('fa-eye');
+        toggleButton.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleButton.classList.remove('fa-eye-slash');
+        toggleButton.classList.add('fa-eye');
+    }
+}
+</script>
+{% endblock %} 

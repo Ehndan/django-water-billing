@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Consumers{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="/static/css/consumers.css">
+<script src="/static/js/consumers.js"></script>
+
+<div class="consumers">
+    <div class="page-header">
+        <h1 class="page-title">Consumers</h1>
+        <a href="#" class="btn btn-primary" data-action="add-consumer"><i class="fas fa-plus"></i> Add Consumer</a>
+    </div>
+
+    <!-- Add Consumer Modal -->
+    <div id="consumer-modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">New Consumer</h2>
+                <button type="button" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'add_consumer' %}" id="add-consumer-form">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        <input type="text" name="first_name" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Middle Initial</label>
+                        <input type="text" name="middle_initial" class="form-control" maxlength="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" name="last_name" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Contact Number</label>
+                        <input type="text" name="contact_number" class="form-control" pattern="\d{11}" title="Contact number must be 11 digits" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Address</label>
+                        <textarea name="address" class="form-control" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Meter Number</label>
+                        <input type="text" name="meter_number" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Account Status</label>
+                        <select name="account_status" class="form-control">
+                            <option value="active">Active</option>
+                            <option value="disconnected">Disconnected</option>
+                        </select>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Consumer Modal -->
+    <div id="edit-consumer-modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Consumer</h2>
+                <button type="button" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" id="edit-consumer-form">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        <input type="text" name="first_name" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Middle Initial</label>
+                        <input type="text" name="middle_initial" class="form-control" maxlength="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" name="last_name" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Contact Number</label>
+                        <input type="text" name="contact_number" class="form-control" pattern="\d{11}" title="Contact number must be 11 digits" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Address</label>
+                        <textarea name="address" class="form-control" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Meter Number</label>
+                        <input type="text" name="meter_number" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Account Status</label>
+                        <select name="account_status" class="form-control">
+                            <option value="active">Active</option>
+                            <option value="disconnected">Disconnected</option>
+                        </select>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Consumer Modal -->
+    <div id="delete-consumer-modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Delete Consumer</h2>
+                <button type="button" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Are you sure you want to delete this consumer? <br>All associated bills and records will also be deleted.<br><br>This action cannot be undone.</p>
+                </div>
+                
+                <div class="consumer-info">
+                    <div class="info-row">
+                        <span class="label">Consumer Name:</span>
+                        <span class="value" id="delete-consumer-name"></span>
+                    </div>
+                </div>
+
+                <form id="delete-consumer-form" method="POST">
+                    {% csrf_token %}
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Delete Consumer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <div class="table-header">
+            <div class="table-actions">
+                <div class="search-group">
+                    <div class="input-icon">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="table-search" class="form-control" placeholder="Search by name...">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+        <table class="table paginated-table">
+            <thead>
+                <tr>
+                        <th class="sortable" data-sort="consumer_id">
+                            Consumer ID
+                            <span class="sort-icon"></span>
+                        </th>
+                        <th class="sortable" data-sort="full_name">
+                            Full Name
+                            <span class="sort-icon"></span>
+                        </th>
+                        <th class="sortable" data-sort="contact">
+                            Contact Number
+                            <span class="sort-icon"></span>
+                        </th>
+                    <th>Address</th>
+                        <th class="sortable" data-sort="meter">
+                            Meter Number
+                            <span class="sort-icon"></span>
+                        </th>
+                        <th class="sortable" data-sort="status">
+                            Account Status
+                            <span class="sort-icon"></span>
+                        </th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for consumer in consumers %}
+                    <tr data-consumer-id="{{ consumer.consumer_id }}">
+                    <td>{{ consumer.consumer_id }}</td>
+                    <td>{{ consumer.get_full_name }}</td>
+                    <td>{{ consumer.contact_number }}</td>
+                    <td>{{ consumer.address }}</td>
+                    <td>{{ consumer.meter_number }}</td>
+                    <td>
+                        <span class="status-badge status-{{ consumer.account_status }}">
+                            {{ consumer.account_status|title }}
+                        </span>
+                    </td>
+                    <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-icon btn-outline-primary" data-action="view-bills" data-id="{{ consumer.consumer_id }}" title="View Records">
+                                    <i class="fas fa-file-alt"></i>
+                                </button>
+                                {% if user.is_superuser or user.user_type == 'admin' %}
+                                <button class="btn btn-icon btn-primary" data-action="edit-consumer" data-id="{{ consumer.consumer_id }}" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-icon btn-danger" 
+                                        data-action="delete-consumer"
+                                        data-id="{{ consumer.consumer_id }}"
+                                        data-name="{{ consumer.get_full_name }}"
+                                        title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+<!-- View Bills Modal -->
+<div id="viewBillsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Consumer Bills</h2>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="bills-table-container"></div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

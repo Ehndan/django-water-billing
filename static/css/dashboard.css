@@ -1,0 +1,317 @@
+.dashboard {
+    padding: 2rem;
+}
+
+/* Stats Grid Styles */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stats-card {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.stats-card:nth-child(1) {
+    border-top: 4px solid #4CAF50;  /* Green for Total Consumers */
+}
+
+.stats-card:nth-child(2) {
+    border-top: 4px solid #FF9800;  /* Orange for Active Bills */
+}
+
+.stats-card:nth-child(3) {
+    border-top: 4px solid #2196F3;  /* Blue for Connected Meters */
+}
+
+.stats-card:nth-child(4) {
+    border-top: 4px solid #9C27B0;  /* Purple for Total Collections */
+}
+
+.stats-card-title {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.stats-card-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.stats-card:nth-child(1) .stats-card-value {
+    color: #4CAF50;  /* Green */
+}
+
+.stats-card:nth-child(2) .stats-card-value {
+    color: #FF9800;  /* Orange */
+}
+
+.stats-card:nth-child(3) .stats-card-value {
+    color: #2196F3;  /* Blue */
+}
+
+.stats-card:nth-child(4) .stats-card-value {
+    color: #9C27B0;  /* Purple */
+}
+
+/* Dashboard Content Layout */
+.dashboard-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.dashboard-content.full-width {
+    grid-template-columns: 1fr;
+}
+
+/* Bills Section Styles */
+.bills-section {
+    min-width: 0; /* Prevent table overflow */
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+}
+
+/* Admin Section Styles */
+.admin-section {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    height: 94.5%
+}
+
+.admin-section h2 {
+    padding-bottom: 0.75rem;
+    font-size: 1.25rem;
+}
+
+.admin-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.50rem;
+    flex: 1;
+    justify-content: flex-start;
+    margin-top: 0.5rem;
+}
+
+.admin-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    color: white;
+    font-size: 0.95rem;
+    font-weight: var(--font-weight-medium);
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.admin-button i {
+    font-size: 2rem;
+}
+
+.admin-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    filter: brightness(110%);
+}
+
+.admin-button.bills-report {
+    background-color: #4CAF50;
+    border-top: 4px solid #4CAF50;
+}
+
+.admin-button.admin-panel {
+    background-color: #2196F3;
+    border-top: 4px solid #2196F3;
+}
+
+
+.admin-button.notifications {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+.button-description {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+    text-align: center;
+}
+
+.admin-button:hover .button-description {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Table Styles */
+.table-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.table-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.search-group {
+    width: 300px;
+}
+
+.input-icon {
+    position: relative;
+    width: 100%;
+}
+
+.input-icon i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    z-index: 1;
+}
+
+.input-icon input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.input-icon input:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    outline: none;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    margin: 0 -1px;
+}
+
+/* Sort Icon Styles */
+.sortable {
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.sort-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+    position: relative;
+}
+
+.sort-icon::before,
+.sort-icon::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+}
+
+.sort-icon::before {
+    top: 0;
+    border-bottom: 4px solid #ccc;
+    transform: translateX(-50%);
+}
+
+.sort-icon::after {
+    bottom: 0;
+    border-top: 4px solid #ccc;
+    transform: translateX(-50%);
+}
+
+.sortable[data-sort-dir="asc"] .sort-icon::before {
+    border-bottom-color: var(--secondary-color);
+}
+
+.sortable[data-sort-dir="desc"] .sort-icon::after {
+    border-top-color: var(--secondary-color);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .dashboard-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .admin-section {
+        margin-top: 2rem;
+    }
+    
+    .admin-cards {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard {
+        padding: 1rem;
+    }
+    
+    .grid {
+        gap: 1rem;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .table-actions {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .search-group {
+        width: 100%;
+    }
+    
+    .table-header {
+        padding: 1rem;
+    }
+}
+
+.chart-section {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    height: 250px;
+}

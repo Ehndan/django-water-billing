@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Bills - {{ bills.first.billing_period|date:'F Y' }}</title>
+    <link rel="stylesheet" href="/static/css/bill_print_template.css">
+</head>
+<body>
+    {% for bill in bills %}
+    <div class="bill-container">
+        <div class="print-header">
+            <img src="/static/images/logo.png" alt="Logo" class="print-logo">
+            <br>
+            <img src="/static/images/logo_text_alt.png" alt="Logo" class="print-logo-text">
+        </div>
+
+        <div class="bill-header">
+            <div class="bill-title">Bill ID: {{ bill.bill_id }}</div>
+            <div>Billing Period: {{ bill.billing_period|date:'F Y' }}</div>
+        </div>
+
+        <div class="bill-info">
+            <div>
+                <div class="bill-info-group">
+                    <div class="bill-info-label">Consumer Name</div>
+                    <div class="bill-info-value">{{ bill.consumer.get_full_name }}</div>
+                </div>
+                <div class="bill-info-group">
+                    <div class="bill-info-label">Meter Number</div>
+                    <div class="bill-info-value">{{ bill.consumer.meter_number }}</div>
+                </div>
+                <div class="bill-info-group">
+                    <div class="bill-info-label">Address</div>
+                    <div class="bill-info-value">{{ bill.consumer.address }}</div>
+                </div>
+            </div>
+            <div>
+                <div class="bill-info-group">
+                    <div class="bill-info-label">Bill Date</div>
+                    <div class="bill-info-value">{{ bill.billing_period|date:'F d, Y' }}</div>
+                </div>
+                <div class="bill-info-group">
+                    <div class="bill-info-label">Due Date</div>
+                    <div class="bill-info-value">{{ bill.due_date|date:'F d, Y' }}</div>
+                </div>
+            </div>
+        </div>
+
+        <table class="bill-details">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Previous Reading</th>
+                    <th>Current Reading</th>
+                    <th>Consumption (m³)</th>
+                    <th>Rate</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Water Consumption</td>
+                    <td>{{ bill.meter_reading.previous_reading }}</td>
+                    <td>{{ bill.meter_reading.current_reading }}</td>
+                    <td>{{ bill.meter_reading.consumption }}</td>
+                    <td>
+                        {% if bill.meter_reading.consumption <= 10 %}
+                            ₱100
+                        {% else %}
+                            ₱100 + ₱10/0.1m³ excess
+                        {% endif %}
+                    </td>
+                    <td>₱{{ bill.amount }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="bill-total">
+            Total Amount Due: ₱{{ bill.amount }}
+        </div>
+
+        <div class="bill-footer">
+            <p>Please pay on or before the due date to avoid disconnection.</p>
+            <p>For inquiries about your bill, please visit the barangay office for further assistance.</p>
+        </div>
+    </div>
+    {% endfor %}
+
+    <script>
+        window.print();
+        window.onafterprint = function() {
+            window.close();
+        };
+    </script>
+
+</body>
+</html> 

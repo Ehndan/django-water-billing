@@ -1,0 +1,151 @@
+{% extends 'public_base.html' %}
+
+{% block title %}Track Bill{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="/static/css/track_bill.css">
+<script src="/static/js/track_bill.js"></script>
+
+
+<div class="track-bill-page">
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} toast">
+            <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+            <p>{{ message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not current_bill %}
+    <div class="search-container">
+        <div class="search-card">
+            <h2>Track Your Bill</h2>
+            <p class="search-subtitle">Enter your Bill ID to check your bill status</p>
+            <form method="GET" class="search-form">
+                <div class="input-group">
+                    <input type="text" name="bill_id" placeholder="Enter Bill ID" required>
+                    <button type="submit" class="search-btn">Track</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="bill-details-container">
+        <div class="bill-card">
+            <h2>Current Bill</h2>
+            <div class="bill-info">
+                <div class="info-row">
+                    <span class="label">Bill ID:</span>
+                    <span class="value">{{ current_bill.bill_id }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Consumer:</span>
+                    <span class="value">{{ consumer.get_full_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Billing Period:</span>
+                    <span class="value">{{ current_bill.billing_period|date:"F Y" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Previous Reading:</span>
+                    <span class="value">{{ current_bill.meter_reading.previous_reading }} m³</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Current Reading:</span>
+                    <span class="value">{{ current_bill.meter_reading.current_reading }} m³</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Consumption:</span>
+                    <span class="value">{{ current_bill.meter_reading.consumption }} m³</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Amount:</span>
+                    <span class="value">₱{{ current_bill.amount }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Due Date:</span>
+                    <span class="value">{{ current_bill.due_date|date:"F d, Y" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Status:</span>
+                    <span class="value status-badge status-{{ current_bill.status }}">
+                        {{ current_bill.status|title }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bill-card">
+            <h2>Consumer Information</h2>
+            <div class="bill-info">
+                <div class="info-row">
+                    <span class="label">Consumer ID:</span>
+                    <span class="value">{{ consumer.consumer_id }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Name:</span>
+                    <span class="value">{{ consumer.get_full_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Address:</span>
+                    <span class="value">{{ consumer.address }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Meter Number:</span>
+                    <span class="value">{{ consumer.meter_number }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Account Status:</span>
+                    <span class="value status-badge status-{{ consumer.account_status }}">
+                        {{ consumer.account_status|title }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bill-history-section">
+        <h2>Bill History</h2>
+        <div class="table-wrapper">
+            <table class="bill-table">
+                <thead>
+                    <tr>
+                        <th>Bill ID</th>
+                        <th>Billing Period</th>
+                        <th>Consumption (m³)</th>
+                        <th>Amount</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bill in bills %}
+                    <tr>
+                        <td>{{ bill.bill_id }}</td>
+                        <td>{{ bill.billing_period|date:"F Y" }}</td>
+                        <td>{{ bill.meter_reading.consumption }}</td>
+                        <td>₱{{ bill.amount }}</td>
+                        <td>{{ bill.due_date|date:"M d, Y" }}</td>
+                        <td>
+                            <span class="status-badge status-{{ bill.status }}">
+                                {{ bill.status|title }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No bill history found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %} 

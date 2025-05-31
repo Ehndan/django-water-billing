@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Send Notifications{% endblock %}
+
+
+{% block content %}
+
+<link rel="stylesheet" href="/static/css/send_notifications.css">
+<script src="/static/js/send_notifications.js"></script>
+
+<div class="send-notifications">
+    <div class="page-header">
+        <h1 class="page-title">Send Notifications</h1>
+    </div>
+
+    <br>
+
+    <div class="form-container">
+        <form method="POST" action="{% url 'send_notifications' %}" id="send-notifications-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Billing Period</label>
+                <input type="month" name="billing_period" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Notification Type</label>
+                <select name="notification_type" class="form-control" required>
+                    <option value="bill">New Bill Notice</option>
+                    <option value="reminder">Payment Reminder</option>
+                    <option value="disconnection">Disconnection Notice</option>
+                </select>
+            </div>
+
+            <div class="message-preview">
+                <h3>Message Preview</h3>
+                <div class="preview-content">
+                    <div id="message-template" class="message-template">
+                        <!-- Message templates will be shown here -->
+                    </div>
+                    <div class="preview-info">
+                        <p>Note: Actual messages will include consumer name and bill details.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Send Notifications</button>
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %} 
