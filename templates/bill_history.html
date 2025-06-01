@@ -26,9 +26,10 @@
                         <i class="fas fa-calendar"></i>
                         <select id="period-filter" class="form-control">
                             <option value="">All Periods</option>
-                            {% for bill in bills %}
-                            <option value="{{ bill.billing_period|date:'Y-m' }}">
-                                {{ bill.billing_period|date:'F Y' }}
+                            {% regroup bills by billing_period|date:'Y-m' as period_list %}
+                            {% for period in period_list %}
+                            <option value="{{ period.grouper }}">
+                                {{ period.list.0.billing_period|date:'F Y' }}
                             </option>
                             {% endfor %}
                         </select>

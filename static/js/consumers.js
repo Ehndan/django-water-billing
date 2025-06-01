@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         addModalOverlay.addEventListener('click', function(e) {
-            if (e.target === addModalOverlay) {
+            if (e.target === addModalOverlay && !e.target.querySelector('.modal-content').contains(e.target)) {
                 addModalOverlay.classList.remove('show');
             }
         });
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Error loading consumer data. Please try again.');
+                        showAlert('Error loading consumer data. Please try again.', 'error');
                     });
             });
         });
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         editModalOverlay.addEventListener('click', function(e) {
-            if (e.target === editModalOverlay) {
+            if (e.target === editModalOverlay && !e.target.querySelector('.modal-content').contains(e.target)) {
                 editModalOverlay.classList.remove('show');
             }
         });
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(({ status, data }) => {
                 if (status && data.status === 'success') {
                     editModalOverlay.classList.remove('show');
-                    showAlert('Consumer updated successfully');
+                    showAlert(data.message || 'An error occurred while updating the consumer', 'error');
                     window.location.reload();
                 } else {
                     showAlert(data.message || 'An error occurred while updating the consumer', 'error');
@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Close delete modal when clicking outside
     deleteModal.addEventListener('click', function(e) {
-        if (e.target === deleteModal) {
+        if (e.target === deleteModal && !e.target.querySelector('.modal-content').contains(e.target)) {
             deleteModal.classList.remove('show');
         }
     });
@@ -387,7 +387,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Close view bills modal when clicking outside
     viewBillsModal.addEventListener('click', function(e) {
-        if (e.target === viewBillsModal) {
+        if (e.target === viewBillsModal && !e.target.querySelector('.modal-content').contains(e.target)) {
             viewBillsModal.classList.remove('show');
         }
     });
@@ -447,30 +447,3 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 });
-
-// Function to show custom alert (if not already defined)
-function showAlert(message, type = 'success') {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type}`;
-    alertDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 25px;
-        border-radius: 4px;
-        z-index: 2000;
-        background-color: ${type === 'success' ? '#d4edda' : '#f8d7da'};
-        color: ${type === 'success' ? '#155724' : '#721c24'};
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        transition: opacity 0.3s ease;
-    `;
-    alertDiv.textContent = message;
-
-    document.body.appendChild(alertDiv);
-
-    // Remove the alert after 3 seconds
-    setTimeout(() => {
-        alertDiv.style.opacity = '0';
-        setTimeout(() => alertDiv.remove(), 300);
-    }, 3000);
-}

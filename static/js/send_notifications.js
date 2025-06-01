@@ -27,8 +27,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Form validation
     form.addEventListener('submit', function(e) {
-        if (!confirm('Send notifications to all consumers with unpaid bills for the selected period?')) {
-            e.preventDefault();
-        }
+        e.preventDefault();
+        showAlert('Are you sure you want to send notifications to all consumers with unpaid bills for the selected period?', 'warning');
+        // Continue with form submission
+        this.submit();
     });
 });

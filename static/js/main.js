@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const previousReading = parseFloat(this.querySelector('[name="previous_reading"]').value);
 
             if (currentReading < previousReading) {
-                alert('Current reading cannot be less than previous reading.');
+                showAlert('Current reading cannot be less than previous reading.', 'error');
                 return;
             }
 
@@ -141,14 +141,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.status === 'success') {
                     modalOverlay.classList.remove('show');
                     // Show success message
-                    alert(data.message);
+                    showAlert(data.message);
                     // Reload the page or redirect
                     window.location.href = data.redirect;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred while generating the bill. Please try again.');
+                showAlert('An error occurred while generating the bill. Please try again.', 'error');
             });
         });
 

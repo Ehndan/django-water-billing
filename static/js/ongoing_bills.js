@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Close print bills modal when clicking outside
         printBillsModal.addEventListener('click', function(e) {
-            if (e.target === printBillsModal) {
+            if (e.target === printBillsModal && !e.target.querySelector('.modal-content').contains(e.target)) {
                 printBillsModal.classList.remove('show');
             }
         });
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Close mark paid modal when clicking outside
     markPaidModal.addEventListener('click', function(e) {
-        if (e.target === markPaidModal) {
+        if (e.target === markPaidModal && !e.target.querySelector('.modal-content').contains(e.target)) {
             markPaidModal.classList.remove('show');
         }
     });
@@ -106,18 +106,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.status === 'success') {
                     // Close modal
                     markPaidModal.classList.remove('show');
-                    // Show success message
-                    showAlert(data.message);
                     // Reload page to update table
                     window.location.reload();
                 } else {
-                    showAlert(data.message || 'An error occurred while marking the bill as paid', 'error');
                     submitButton.disabled = false;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showAlert('An error occurred while marking the bill as paid', 'error');
                 submitButton.disabled = false;
             });
         });
@@ -163,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Close modal when clicking outside
         generateBillModal.addEventListener('click', function(e) {
-            if (e.target === generateBillModal) {
+            if (e.target === generateBillModal && !e.target.querySelector('.modal-content').contains(e.target)) {
                 generateBillModal.classList.remove('show');
             }
         });
@@ -282,7 +278,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (errors.length > 0) {
-            showAlert(errors.join("\n"), 'error');
             return;
         }
 
@@ -300,19 +295,16 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json().then(data => ({ status: response.ok, data })))
         .then(({ status, data }) => {
             if (status && data.status === 'success') {
-                showAlert(data.message);
                 // Close modal
                 generateBillModal.classList.remove('show');
                 // Reload page after successful submission
                 window.location.reload();
             } else {
-                showAlert(data.message || 'An error occurred while generating the bill', 'error');
                 submitButton.disabled = false;
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showAlert('An error occurred while generating the bill', 'error');
             submitButton.disabled = false;
         });
     });
@@ -388,6 +380,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } else if (noResultsRow) {
             noResultsRow.remove();
+        }
+
+        // Refresh pagination if it exists
+        if (typeof refreshPagination === 'function') {
+            refreshPagination();
         }
     }
 
