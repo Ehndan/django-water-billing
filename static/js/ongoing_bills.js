@@ -15,6 +15,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const printBillsModal = document.getElementById('print-bills-modal-overlay');
     const printBillsForm = document.getElementById('print-bills-form');
     const printBillsCloseButtons = printBillsModal.querySelectorAll('.modal-close');
+    const printErrorContainer = document.createElement('div');
+    printErrorContainer.className = 'alert alert-error print-error-message';
+    printErrorContainer.style.display = 'none';
+
     
     // Show print bills modal when clicking print button
     if (printBillsBtn && printBillsModal) {
@@ -36,6 +40,8 @@ document.addEventListener('DOMContentLoaded', function() {
         printBillsCloseButtons.forEach(button => {
             button.addEventListener('click', function() {
                 printBillsModal.classList.remove('show');
+                printErrorContainer.textContent = '';
+                printErrorContainer.style.display = 'none';
             });
         });
         
@@ -43,6 +49,60 @@ document.addEventListener('DOMContentLoaded', function() {
         printBillsModal.addEventListener('click', function(e) {
             if (e.target === printBillsModal && !e.target.querySelector('.modal-content').contains(e.target)) {
                 printBillsModal.classList.remove('show');
+                printErrorContainer.textContent = '';
+                printErrorContainer.style.display = 'none';
+            }
+        });
+    }
+
+    // Handle print bills form submission via AJAX to avoid opening a new page when no bills
+    if (printBillsForm) {
+        // Attach error container once
+        const modalBody = printBillsForm.closest('.modal-body') || printBillsForm;
+        modalBody.appendChild(printErrorContainer);
+
+        printBillsForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            printErrorContainer.textContent = '';
+            printErrorContainer.style.display = 'none';
+
+            const submitBtn = printBillsForm.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
+
+            try {
+                const formData = new FormData(printBillsForm);
+                const response = await fetch(printBillsForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.status === 'ok' && data.html) {
+                    // Open a new window with the returned HTML
+                    const win = window.open('', '_blank');
+                    if (win) {
+                        win.document.open();
+                        win.document.write(data.html);
+                        win.document.close();
+                        win.focus();
+                    }
+                    printBillsModal.classList.remove('show');
+                } else if (data.status === 'empty') {
+                    printErrorContainer.style.display = 'none';
+                    showAlert(data.message || 'No bills found for the selected period and status.', 'error');
+                } else {
+                    printErrorContainer.style.display = 'none';
+                    showAlert(data.message || 'Unable to print bills right now.', 'error');
+                }
+            } catch (err) {
+                printErrorContainer.style.display = 'none';
+                showAlert('Unable to print bills right now. Please try again.', 'error');
+            } finally {
+                if (submitBtn) submitBtn.disabled = false;
             }
         });
     }
@@ -55,6 +115,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add event listener for mark as paid buttons
     tbody.addEventListener('click', function(e) {
         const markPaidBtn = e.target.closest('[data-action="mark-paid"]');
+        const printBillBtn = e.target.closest('[data-action="print-bill"]');
+        
+        if (printBillBtn) {
+            const billId = printBillBtn.dataset.id;
+            // Open print page in new window
+            window.open(`/bills/print/?bill_id=${billId}`, '_blank');
+            return;
+        }
+        
         if (markPaidBtn) {
             const billId = markPaidBtn.dataset.id;
             const consumer = markPaidBtn.dataset.consumer;
@@ -328,17 +397,32 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             header.setAttribute('data-sort-dir', currentSort.direction);
 
-            // Sort the table
-            const rows = Array.from(tbody.querySelectorAll('tr:not(.empty-row)'));
-            const sortedRows = sortRows(rows, column, currentSort.direction);
+            // Remove any no-results row and empty rows before sorting
+            let existingNoResultsRow = tbody.querySelector('.no-results-row');
+            if (existingNoResultsRow) {
+                existingNoResultsRow.remove();
+            }
             
-            // Clear and repopulate tbody
+            const existingEmptyRows = tbody.querySelectorAll('tr.empty-row');
+            existingEmptyRows.forEach(row => row.remove());
+
+            // Get actual data rows only
+            const dataRows = Array.from(tbody.querySelectorAll('tr:not(.empty-row):not(.no-results-row)'));
+            
+            // Sort them
+            const sortedRows = sortRows(dataRows, column, currentSort.direction);
+            
+            // Clear tbody completely
             while (tbody.firstChild) {
                 tbody.removeChild(tbody.firstChild);
             }
-            sortedRows.forEach(row => tbody.appendChild(row));
+            
+            // Append sorted data rows in order
+            sortedRows.forEach(row => {
+                tbody.appendChild(row);
             });
         });
+    });
 
     // Handle search input
     const searchInput = document.getElementById('table-search');
@@ -351,9 +435,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function filterTable() {
         const searchTerm = searchInput.value.toLowerCase();
         const selectedPeriod = periodFilter.value;
-        const rows = tbody.querySelectorAll('tr:not(.empty-row)');
-        let hasVisibleRows = false;
+        const rows = tbody.querySelectorAll('tr:not(.empty-row):not(.no-results-row)');
+        let visibleCount = 0;
 
+        // First, remove any existing no-results message
+        let existingNoResultsRow = tbody.querySelector('.no-results-row');
+        if (existingNoResultsRow) {
+            existingNoResultsRow.remove();
+        }
+
+        // Filter and show/hide rows
         rows.forEach(row => {
             const consumerName = row.children[1].textContent.toLowerCase();
             const period = row.dataset.period;
@@ -362,25 +453,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const isVisible = matchesSearch && matchesPeriod;
             
             row.style.display = isVisible ? '' : 'none';
-            if (isVisible) hasVisibleRows = true;
+            if (isVisible) visibleCount++;
         });
-
-        // Show no results message if needed
-        let noResultsRow = tbody.querySelector('.no-results-row');
-        if (!hasVisibleRows) {
-            if (!noResultsRow) {
-                noResultsRow = document.createElement('tr');
-                noResultsRow.className = 'no-results-row';
-                const td = document.createElement('td');
-                td.colSpan = 8;
-                td.className = 'text-center';
-                td.textContent = 'No matching records found';
-                noResultsRow.appendChild(td);
-                tbody.appendChild(noResultsRow);
-            }
-        } else if (noResultsRow) {
-            noResultsRow.remove();
-        }
 
         // Refresh pagination if it exists
         if (typeof refreshPagination === 'function') {
@@ -389,14 +463,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function sortRows(rows, column, direction) {
-        return rows.sort((a, b) => {
+        // Filter out any empty rows that somehow got through
+        const dataOnlyRows = rows.filter(row => !row.classList.contains('empty-row'));
+        
+        return dataOnlyRows.sort((a, b) => {
             let aVal = getCellValue(a, column);
             let bVal = getCellValue(b, column);
 
-            // Handle empty values - move them to the end
-            if (!aVal && bVal) return 1;
-            if (aVal && !bVal) return -1;
-            if (!aVal && !bVal) return 0;
+            // Treat whitespace and &nbsp; as empty
+            const aEmpty = !aVal || aVal.trim() === '' || aVal === '\u00A0';
+            const bEmpty = !bVal || bVal.trim() === '' || bVal === '\u00A0';
+
+            // Handle empty values - always move them to the end regardless of sort direction
+            if (aEmpty && !bEmpty) return 1;
+            if (!aEmpty && bEmpty) return -1;
+            if (aEmpty && bEmpty) return 0;
 
             // Handle numeric values
             if (!isNaN(aVal) && !isNaN(bVal)) {

@@ -265,15 +265,31 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             header.setAttribute('data-sort-dir', currentSort.direction);
 
-            // Sort the table
-            const rows = Array.from(tbody.querySelectorAll('tr:not(.empty-row)'));
-            const sortedRows = sortRows(rows, column, currentSort.direction);
+            // Remove any no-results row before sorting
+            let existingNoResultsRow = tbody.querySelector('.no-results-row');
+            if (existingNoResultsRow) {
+                existingNoResultsRow.remove();
+            }
             
-            // Clear and repopulate tbody
+            // Remove all empty rows before sorting
+            const existingEmptyRows = tbody.querySelectorAll('tr.empty-row');
+            existingEmptyRows.forEach(row => row.remove());
+
+            // Get actual data rows (not empty rows)
+            const dataRows = Array.from(tbody.querySelectorAll('tr:not(.empty-row):not(.no-results-row)'));
+            
+            // Sort them
+            const sortedRows = sortRows(dataRows, column, currentSort.direction);
+            
+            // Clear tbody completely
             while (tbody.firstChild) {
                 tbody.removeChild(tbody.firstChild);
             }
-            sortedRows.forEach(row => tbody.appendChild(row));
+            
+            // Append sorted data rows in order
+            sortedRows.forEach(row => {
+                tbody.appendChild(row);
+            });
             
             // Refresh the global pagination
             const paginationInstance = table.pagination;
@@ -289,32 +305,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function filterTable() {
         const searchTerm = searchInput.value.toLowerCase();
-        const rows = tbody.querySelectorAll('tr:not(.empty-row)');
-        let hasVisibleRows = false;
+        const rows = tbody.querySelectorAll('tr:not(.empty-row):not(.no-results-row)');
+        let visibleCount = 0;
 
+        // First, remove any existing no-results message
+        let existingNoResultsRow = tbody.querySelector('.no-results-row');
+        if (existingNoResultsRow) {
+            existingNoResultsRow.remove();
+        }
+
+        // Filter and show/hide rows
         rows.forEach(row => {
             const consumerName = row.children[1].textContent.toLowerCase();
             const matchesSearch = !searchTerm || consumerName.includes(searchTerm);
             row.style.display = matchesSearch ? '' : 'none';
-            if (matchesSearch) hasVisibleRows = true;
+            if (matchesSearch) visibleCount++;
         });
-
-        // Show no results message if needed
-        let noResultsRow = tbody.querySelector('.no-results-row');
-        if (!hasVisibleRows) {
-            if (!noResultsRow) {
-                noResultsRow = document.createElement('tr');
-                noResultsRow.className = 'no-results-row';
-                const td = document.createElement('td');
-                td.colSpan = 7;
-                td.className = 'text-center';
-                td.textContent = 'No matching records found';
-                noResultsRow.appendChild(td);
-                tbody.appendChild(noResultsRow);
-            }
-        } else if (noResultsRow) {
-            noResultsRow.remove();
-        }
 
         // Refresh the global pagination
         const paginationInstance = table.pagination;
@@ -324,9 +330,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function sortRows(rows, column, direction) {
-        return rows.sort((a, b) => {
+        // Filter out any empty rows that somehow got through
+        const dataOnlyRows = rows.filter(row => !row.classList.contains('empty-row'));
+        
+        return dataOnlyRows.sort((a, b) => {
             let aVal = getCellValue(a, column);
             let bVal = getCellValue(b, column);
+
+            // Treat whitespace and &nbsp; as empty
+            const aEmpty = !aVal || aVal.trim() === '' || aVal === '\u00A0';
+            const bEmpty = !bVal || bVal.trim() === '' || bVal === '\u00A0';
+
+            // Handle empty values - always move them to the end regardless of sort direction
+            if (aEmpty && !bEmpty) return 1;
+            if (!aEmpty && bEmpty) return -1;
+            if (aEmpty && bEmpty) return 0;
 
             // Handle numeric values
             if (!isNaN(aVal) && !isNaN(bVal)) {
@@ -334,6 +352,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 bVal = parseFloat(bVal);
             }
 
+            // Handle currency values
+            if (typeof aVal === 'string' && aVal.startsWith('₱')) {
+                aVal = parseFloat(aVal.replace('₱', '').replace(/,/g, ''));
+                bVal = parseFloat(bVal.replace('₱', '').replace(/,/g, ''));
+            }
+
+            // Handle date values
+            if (isDateString(aVal)) {
+                aVal = new Date(aVal);
+                bVal = new Date(bVal);
+            }
+
+            // For non-empty values, sort according to direction
             if (aVal < bVal) return direction === 'asc' ? -1 : 1;
             if (aVal > bVal) return direction === 'asc' ? 1 : -1;
             return 0;
@@ -349,6 +380,11 @@ document.addEventListener('DOMContentLoaded', function() {
             'status': 5
         };
         return row.children[columnMap[column]].textContent.trim();
+    }
+
+    function isDateString(str) {
+        return /^[A-Za-z]{3}\s\d{1,2},\s\d{4}$/.test(str) || // "Mar 15, 2024"
+               /^[A-Za-z]{3,}\s\d{4}$/.test(str);             // "March 2024"
     }
 
     // Modal functionality

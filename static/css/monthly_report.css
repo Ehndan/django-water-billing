@@ -1,0 +1,53 @@
+/* Monthly Report Specific Styles */
+.report-container {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Print-specific enhancements */
+@media print {
+    @page {
+        margin: 10mm;
+    }
+    
+    .stat-card {
+        page-break-inside: avoid;
+    }
+    
+    table {
+        font-size: 11px;
+    }
+    
+    thead {
+        display: table-header-group;
+    }
+    
+    tr {
+        page-break-inside: avoid;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    table {
+        font-size: 11px;
+    }
+    
+    th, td {
+        padding: 8px;
+    }
+}

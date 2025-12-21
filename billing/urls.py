@@ -19,4 +19,5 @@ urlpatterns = [
     path('bills/last-reading/<int:consumer_id>/', views.get_last_reading, name='get_last_reading'),
     path('bills/print/', views.print_bills, name='print_bills'),
     path('notifications/send/', views.send_notifications, name='send_notifications'),
+    path('reports/monthly/', views.generate_monthly_report, name='generate_monthly_report'),
 ] 
