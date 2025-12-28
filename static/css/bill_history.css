@@ -2,51 +2,6 @@
     padding: 2rem;
 }
 
-/* Table header styling with vertical borders */
-.paginated-table thead th {
-    border-right: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.paginated-table thead th:last-child {
-    border-right: none;
-}
-
-/* Table row height consistency - prevent size changes with empty rows */
-.paginated-table tbody tr {
-    height: auto;
-    min-height: 2.5rem;
-}
-
-.paginated-table tbody tr td {
-    padding: 1rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    border-right: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.paginated-table tbody tr td:last-child {
-    border-right: none;
-}
-
-.paginated-table tbody tr.empty-row {
-    background-color: white;
-    height: auto;
-    min-height: 2.5rem;
-}
-
-.paginated-table tbody tr.empty-row td {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    border-right: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 1rem;
-    background-color: white;
-    height: auto;
-    min-height: 2.5rem;
-    line-height: 1.5;
-}
-
-.paginated-table tbody tr.empty-row td:last-child {
-    border-right: none;
-}
-
 .page-header {
     display: flex;
     justify-content: space-between;

@@ -2,51 +2,6 @@
     padding: 2rem;
 }
 
-/* Table header styling with vertical borders */
-.paginated-table thead th {
-    border-right: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.paginated-table thead th:last-child {
-    border-right: none;
-}
-
-/* Table row height consistency - prevent size changes with empty rows */
-.paginated-table tbody tr {
-    height: auto;
-    min-height: 2.5rem;
-}
-
-.paginated-table tbody tr td {
-    padding: 1rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    border-right: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.paginated-table tbody tr td:last-child {
-    border-right: none;
-}
-
-.paginated-table tbody tr.empty-row {
-    background-color: white;
-    height: auto;
-    min-height: 2.5rem;
-}
-
-.paginated-table tbody tr.empty-row td {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    border-right: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 1rem;
-    background-color: white;
-    height: auto;
-    min-height: 2.5rem;
-    line-height: 1.5;
-}
-
-.paginated-table tbody tr.empty-row td:last-child {
-    border-right: none;
-}
-
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -349,9 +304,6 @@
     display: flex;
     align-items: center;
     gap: 1.25rem;
-    padding: 1rem 1.25rem;
-    border-radius: 8px;
-    border: 1px solid transparent;
 }
 
 .alert.alert-info {
@@ -360,36 +312,23 @@
     border: 1px solid #b8daff;
 }
 
-.alert.alert-warning {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-.alert.alert-error {
-    background-color: #ffe5e5;
-    color: #a12222;
-    border: 1px solid #ffc2c2;
-}
-
 .alert i {
-    font-size: 1.6rem;
+    font-size: 2rem;
     flex-shrink: 0;
-    color: inherit;
+    color: #0d6efd;
 }
 
 .alert p {
     margin: 0;
-    line-height: 1.5;
+    line-height: 1.6;
     flex: 1;
 }
 
 .alert br {
     display: block;
     content: "";
-    margin-top: 0.35rem;
+    margin-top: 0.5rem;
 }
-
 
 .bill-info {
     background-color: var(--background-color);

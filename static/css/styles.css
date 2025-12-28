@@ -33,6 +33,19 @@ body {
     line-height: 1.6;
 }
 
+body.track-bill-body .main-content .content-wrapper {
+    padding: 0;
+}
+
+body.track-bill-body .footer {
+    position: relative;
+    z-index: 1001;
+}
+
+.nav-hidden {
+    display: none;
+}
+
 /* Sidebar Styles */
 .sidebar {
     position: fixed;
@@ -40,7 +53,7 @@ body {
     top: 0;
     height: 100vh;
     width: var(--sidebar-width);
-    background-color: var(--primary-color);
+    background: linear-gradient(to top, var(--primary-color), color-mix(in srgb, var(--primary-color) 80%, rgb(120, 178, 255)));
     color: white;
     transition: width 0.3s ease;
     z-index: 1000;
@@ -668,7 +681,7 @@ select::-webkit-input-placeholder {
     top: 0;
     left: 0;
     right: 0;
-    z-index: 100;
+    z-index: 1000;
     border: none;
     background: white;
     height: var(--header-height);

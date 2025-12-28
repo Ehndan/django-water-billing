@@ -22,7 +22,7 @@ def track_bill(request):
     bill_id = request.GET.get('bill_id')
     if bill_id:
         try:
-            bill = get_object_or_404(Bill, bill_id=bill_id)
+            bill = Bill.objects.get(bill_id=bill_id)
             consumer = bill.consumer
             bills = Bill.objects.filter(consumer=consumer).order_by('-billing_period')
             return render(request, 'track_bill.html', {
@@ -30,9 +30,12 @@ def track_bill(request):
                 'consumer': consumer,
                 'bills': bills
             })
-        except:
-            messages.error(request, 'Invalid Bill ID. Please try again.')
-            return redirect('landing_page')
+        except Bill.DoesNotExist:
+            messages.error(request, 'Invalid Bill ID. Please check and try again.')
+            return render(request, 'track_bill.html')
+        except Exception as e:
+            messages.error(request, 'An error occurred. Please try again.')
+            return render(request, 'track_bill.html')
     return render(request, 'track_bill.html')
 
 @login_required
