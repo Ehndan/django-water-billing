@@ -6,7 +6,7 @@ Welcome! This project has been converted to a modern Django REST Framework API. 
 
 ## 🚀 Getting Started (Start Here!)
 
-### [→ QUICKSTART.md](QUICKSTART.md)
+### [→ quickstart.md](quickstart.md)
 **5-minute setup guide**
 - Quick installation steps
 - How to run the development server
@@ -17,7 +17,7 @@ Welcome! This project has been converted to a modern Django REST Framework API. 
 
 ## 📚 Documentation Files
 
-### [→ API_DOCUMENTATION.md](API_DOCUMENTATION.md)
+### [→ api_documentation.md](../docs/api_documentation.md)
 **Complete API Reference (300+ lines)**
 - All 40+ endpoints documented
 - Request/response examples
@@ -25,7 +25,7 @@ Welcome! This project has been converted to a modern Django REST Framework API. 
 - Error responses
 - Pagination and searching
 
-### [→ DRF_SETUP.md](DRF_SETUP.md)
+### [→ drf_setup.md](drf_setup.md)
 **Setup Guide & Feature Overview (400+ lines)**
 - Installation instructions
 - Configuration details
@@ -34,7 +34,7 @@ Welcome! This project has been converted to a modern Django REST Framework API. 
 - Troubleshooting tips
 - Code examples
 
-### [→ CONVERSION_SUMMARY.md](CONVERSION_SUMMARY.md)
+### [→ conversion_summary.md](../reports/conversion_summary.md)
 **Technical Details of Changes**
 - What was changed and why
 - New files created
@@ -43,7 +43,7 @@ Welcome! This project has been converted to a modern Django REST Framework API. 
 - File structure
 - Migration notes
 
-### [→ COMPLETION_REPORT.md](COMPLETION_REPORT.md)
+### [→ completion_report.md](../reports/completion_report.md)
 **Project Completion Summary**
 - What was accomplished
 - Statistics and metrics
@@ -90,11 +90,11 @@ python test_api.py
 ## 📊 Project Structure
 
 ```
-├── 📄 QUICKSTART.md                    ← Start here!
-├── 📄 API_DOCUMENTATION.md             ← All endpoints
-├── 📄 DRF_SETUP.md                     ← Setup guide
-├── 📄 CONVERSION_SUMMARY.md            ← What changed
-├── 📄 COMPLETION_REPORT.md             ← Summary
+├── 📄 quickstart.md                    ← Start here!
+├── 📄 api_documentation.md             ← All endpoints
+├── 📄 drf_setup.md                     ← Setup guide
+├── 📄 conversion_summary.md            ← What changed
+├── 📄 completion_report.md             ← Summary
 ├── 📄 README.md                        ← Original project
 │
 ├── 🔧 Configuration Files
@@ -136,28 +136,28 @@ python test_api.py
 ### I want to...
 
 **...get started quickly**
-→ Read [QUICKSTART.md](QUICKSTART.md)
+→ Read [quickstart.md](quickstart.md)
 
 **...see all API endpoints**
-→ Read [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
+→ Read [api_documentation.md](../docs/api_documentation.md)
 
 **...understand the setup**
-→ Read [DRF_SETUP.md](DRF_SETUP.md)
+→ Read [drf_setup.md](drf_setup.md)
 
 **...know what changed**
-→ Read [CONVERSION_SUMMARY.md](CONVERSION_SUMMARY.md)
+→ Read [conversion_summary.md](../reports/conversion_summary.md)
 
 **...test the API**
 → Run `python test_api.py`
 
 **...configure Twilio**
-→ Check [DRF_SETUP.md](DRF_SETUP.md#configuration)
+→ Check [drf_setup.md](drf_setup.md#configuration)
 
 **...integrate with frontend**
-→ See [API_DOCUMENTATION.md](API_DOCUMENTATION.md#quick-start-examples)
+→ See [api_documentation.md](../docs/api_documentation.md#quick-start-examples)
 
 **...deploy to production**
-→ Check [DRF_SETUP.md](DRF_SETUP.md)
+→ Check [drf_setup.md](drf_setup.md)
 
 ---
 
@@ -188,23 +188,23 @@ python manage.py check
 ## 📖 How to Navigate
 
 1. **New to the project?**
-   - Start with [QUICKSTART.md](QUICKSTART.md)
-   - Then read [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
+   - Start with [quickstart.md](quickstart.md)
+   - Then read [api_documentation.md](../docs/api_documentation.md)
 
 2. **Implementing API integration?**
-   - Check [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for endpoints
+   - Check [api_documentation.md](../docs/api_documentation.md) for endpoints
    - See examples section for curl/fetch/axios
 
 3. **Setting up development?**
-   - Follow [QUICKSTART.md](QUICKSTART.md)
+   - Follow [quickstart.md](quickstart.md)
    - Configure `.env` from `.env.example`
 
 4. **Deploying to production?**
-   - Read [DRF_SETUP.md](DRF_SETUP.md)
+   - Read [drf_setup.md](drf_setup.md)
    - Check security settings section
 
 5. **Understanding changes?**
-   - Read [CONVERSION_SUMMARY.md](CONVERSION_SUMMARY.md)
+   - Read [conversion_summary.md](../reports/conversion_summary.md)
    - See file structure section
 
 ---
@@ -236,16 +236,16 @@ python manage.py check
 ## 📞 Need Help?
 
 ### Error Messages?
-→ Check [DRF_SETUP.md#troubleshooting](DRF_SETUP.md)
+→ Check [drf_setup.md#troubleshooting](drf_setup.md)
 
 ### API Questions?
-→ Check [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
+→ Check [api_documentation.md](../docs/api_documentation.md)
 
 ### Setup Issues?
-→ Check [QUICKSTART.md](QUICKSTART.md) or [DRF_SETUP.md](DRF_SETUP.md)
+→ Check [quickstart.md](quickstart.md) or [drf_setup.md](drf_setup.md)
 
 ### Want to know what changed?
-→ Read [CONVERSION_SUMMARY.md](CONVERSION_SUMMARY.md)
+→ Read [conversion_summary.md](../reports/conversion_summary.md)
 
 ---
 
@@ -261,10 +261,10 @@ Your Water Billing System has been successfully converted to a modern, productio
 - **CORS support**
 - **Ready for frontend integration**
 
-**Start with [QUICKSTART.md](QUICKSTART.md) and you'll be up and running in minutes!**
+**Start with [quickstart.md](quickstart.md) and you'll be up and running in minutes!**
 
 ---
 
-*Last Updated: December 21, 2025*
+*Last Updated: January 6, 2026*
 *Django REST Framework Version: 3.14.0*
 *Status: ✅ Production Ready*
