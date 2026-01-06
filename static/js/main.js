@@ -79,6 +79,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Default sort tables by ID column (descending) on load
+    document.querySelectorAll('table.paginated-table').forEach(table => {
+        const headers = Array.from(table.querySelectorAll('thead th.sortable'));
+        if (!headers.length) return;
+
+        // Prefer a header whose data-sort ends with 'id' (e.g., consumer_id, bill_id)
+        let idHeader = headers.find(h => ((h.getAttribute('data-sort') || '').toLowerCase().endsWith('id')));
+        // Fallback to the first sortable header if no explicit id header
+        if (!idHeader) idHeader = headers[0];
+
+        const index = Array.from(idHeader.parentElement.children).indexOf(idHeader);
+        const rows = Array.from(table.querySelectorAll('tbody tr'));
+
+        // Update sort indicators to show default descending
+        table.querySelectorAll('th').forEach(th => th.classList.remove('asc', 'desc'));
+        idHeader.classList.add('desc');
+
+        // Sort rows by the selected column (numeric-aware), descending
+        rows.sort((a, b) => {
+            const aValue = a.children[index]?.textContent?.trim() || '';
+            const bValue = b.children[index]?.textContent?.trim() || '';
+            return bValue.localeCompare(aValue, undefined, { numeric: true });
+        });
+
+        // Reorder rows
+        const tbody = table.querySelector('tbody');
+        rows.forEach(row => tbody.appendChild(row));
+    });
+
     // Form validation for bill generation
     const billForm = document.getElementById('generate-bill-form');
     const generateBillBtn = document.querySelector('[data-action="generate-bill"]');

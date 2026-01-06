@@ -202,6 +202,12 @@
                         </td>
                         <td>
                             <div class="action-buttons">
+                                <button class="btn btn-icon btn-outline-primary" 
+                                        data-action="print-bill"
+                                        data-id="{{ bill.bill_id }}"
+                                        title="Print Bill">
+                                    <i class="fas fa-print"></i>
+                                </button>
                                 <button class="btn btn-icon btn-primary" 
                                         data-action="mark-paid"
                                         data-id="{{ bill.bill_id }}"
@@ -230,7 +236,7 @@
         <div class="modal-body">
             <div class="alert alert-info">
                 <i class="fas fa-info-circle"></i>
-                <p>Are you sure you want to mark this bill as paid?<br><br>This action cannot be undone.</p>
+                <p>Are you sure you want to mark this bill as paid?<br>This action cannot be undone.</p>
             </div>
             
             <div class="bill-info">

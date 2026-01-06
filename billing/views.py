@@ -4,8 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Sum, Count, Q
 from django.core.paginator import Paginator
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
 from django.template.loader import render_to_string
+from django.core.mail import EmailMessage
 from .models import User, Consumer, Bill, Notification, MeterReading
 from datetime import datetime, timedelta
 import json
@@ -21,7 +22,7 @@ def track_bill(request):
     bill_id = request.GET.get('bill_id')
     if bill_id:
         try:
-            bill = get_object_or_404(Bill, bill_id=bill_id)
+            bill = Bill.objects.get(bill_id=bill_id)
             consumer = bill.consumer
             bills = Bill.objects.filter(consumer=consumer).order_by('-billing_period')
             return render(request, 'track_bill.html', {
@@ -29,9 +30,12 @@ def track_bill(request):
                 'consumer': consumer,
                 'bills': bills
             })
-        except:
-            messages.error(request, 'Invalid Bill ID. Please try again.')
-            return redirect('landing_page')
+        except Bill.DoesNotExist:
+            messages.error(request, 'Invalid Bill ID. Please check and try again.')
+            return render(request, 'track_bill.html')
+        except Exception as e:
+            messages.error(request, 'An error occurred. Please try again.')
+            return render(request, 'track_bill.html')
     return render(request, 'track_bill.html')
 
 @login_required
@@ -492,79 +496,159 @@ def delete_bill(request, bill_id):
 @login_required
 def print_bills(request):
     if request.method == 'POST':
-        billing_period = request.POST.get('billing_period')
-        bill_status = request.POST.get('bill_status', 'all')
+        billing_period = request.POST.get('billing_period', '').strip()
+        bill_status = request.POST.get('bill_status', 'all').strip()
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         
-        # Convert YYYY-MM to YYYY-MM-DD by adding the first day of the month
-        billing_date = datetime.strptime(billing_period + '-01', '%Y-%m-%d').date()
+        # Validate billing period
+        if not billing_period:
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'message': 'Please select a billing period.'}, status=400)
+            return HttpResponse('Please select a billing period.', status=400)
         
-        # Filter bills for the entire month
-        bills = Bill.objects.filter(
-            billing_period__year=billing_date.year,
-            billing_period__month=billing_date.month
-        ).select_related('consumer')
+        try:
+            # Convert YYYY-MM to YYYY-MM-DD by adding the first day of the month
+            billing_date = datetime.strptime(billing_period + '-01', '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'message': 'Invalid billing period format. Please select a valid month.'}, status=400)
+            return HttpResponse('Invalid billing period format. Please select a valid month.', status=400)
         
-        # Apply status filter if not 'all'
-        if bill_status != 'all':
-            bills = bills.filter(status=bill_status)
+        try:
+            # Filter bills for the entire month
+            bills = Bill.objects.filter(
+                billing_period__year=billing_date.year,
+                billing_period__month=billing_date.month
+            ).select_related('consumer', 'meter_reading')
+            
+            # Apply status filter if not 'all'
+            if bill_status != 'all' and bill_status in ['paid', 'unpaid']:
+                bills = bills.filter(status=bill_status)
+            
+            # Order by consumer name
+            bills = bills.order_by('consumer__last_name', 'consumer__first_name')
+            
+            if not bills.exists():
+                if is_ajax:
+                    return JsonResponse({'status': 'empty', 'message': 'No bills found for the selected period and status.'}, status=404)
+                return HttpResponseNotFound('No bills found for the selected period and status.')
+            
+            # AJAX: return rendered HTML to open in a new window via JS
+            if is_ajax:
+                html = render_to_string('bill_print_template.html', {
+                    'bills': bills,
+                    'show_form': False,
+                    'single_bill': False
+                }, request=request)
+                return JsonResponse({'status': 'ok', 'html': html})
+            
+            # Non-AJAX fallback: render full page
+            return render(request, 'bill_print_template.html', {'bills': bills, 'show_form': False})
+        except Exception as e:
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'message': 'An error occurred while retrieving bills. Please try again.'}, status=500)
+            return HttpResponse('An error occurred while retrieving bills. Please try again.', status=500)
+    
+    # Handle GET request for individual bill printing
+    bill_id = request.GET.get('bill_id', '').strip()
+    if bill_id:
+        try:
+            bill = Bill.objects.select_related('consumer', 'meter_reading').get(bill_id=bill_id)
+            bills = [bill]
+            return render(request, 'bill_print_template.html', {
+                'bills': bills,
+                'show_form': False,
+                'single_bill': True
+            })
+        except Bill.DoesNotExist:
+            return HttpResponseNotFound('Bill not found.')
+        except Exception as e:
+            return HttpResponse('An error occurred while retrieving the bill.', status=500)
         
-        # Order by consumer name
-        bills = bills.order_by('consumer__last_name', 'consumer__first_name')
-        
-        if not bills.exists():
-            messages.warning(request, 'No bills found for the selected period and status.')
-            return redirect('print_bills')
-        
-        return render(request, 'bill_print_template.html', {'bills': bills})
-        
-    return render(request, 'print_bills.html')
+    return render(request, 'bill_print_template.html', {'bills': [], 'show_form': True})
 
 @login_required
 def send_notifications(request):
     if request.method == 'POST':
-        billing_period = request.POST.get('billing_period')
+        billing_period_raw = (request.POST.get('billing_period') or '').strip()
         notification_type = request.POST.get('notification_type')
-        bills = Bill.objects.filter(billing_period=billing_period, status='unpaid').select_related('consumer')
 
-        # Initialize Twilio client
-        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+        # Normalize billing period (YYYY-MM) to first day of month
+        try:
+            billing_date = datetime.strptime(billing_period_raw + '-01', '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            messages.error(request, 'Please select a valid billing period (YYYY-MM).')
+            return redirect('send_notifications')
+
+        bills = Bill.objects.filter(
+            billing_period__year=billing_date.year,
+            billing_period__month=billing_date.month,
+            status='unpaid'
+        ).select_related('consumer')
+
+        if not bills.exists():
+            messages.info(request, 'No unpaid bills found for the selected period.')
+            return redirect('send_notifications')
+
+        # Decide whether to use Twilio or email-based simulation
+        twilio_enabled = all([
+            getattr(settings, 'TWILIO_ACCOUNT_SID', None),
+            getattr(settings, 'TWILIO_AUTH_TOKEN', None),
+            getattr(settings, 'TWILIO_PHONE_NUMBER', None),
+        ])
+
+        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN) if twilio_enabled else None
+        default_from = getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@example.com')
 
         for bill in bills:
-            if bill.consumer.contact_number:
-                message = f"Dear {bill.consumer.get_full_name()}, "
-                
-                if notification_type == 'bill':
-                    message += f"Your water bill for {bill.billing_period.strftime('%B %Y')} is ₱{bill.amount}. Due date: {bill.due_date.strftime('%B %d, %Y')}."
-                elif notification_type == 'reminder':
-                    message += f"This is a reminder that your water bill of ₱{bill.amount} is due on {bill.due_date.strftime('%B %d, %Y')}."
-                elif notification_type == 'disconnection':
-                    message += f"Your water bill of ₱{bill.amount} is overdue. Please settle immediately to avoid disconnection."
+            phone = (bill.consumer.contact_number or '').strip()
+            if not phone:
+                continue
 
-                try:
-                    # Send SMS via Twilio
-                    sms = client.messages.create(
+            message = f"Dear {bill.consumer.get_full_name()}, "
+
+            if notification_type == 'bill':
+                message += f"Your water bill for {bill.billing_period.strftime('%B %Y')} is ₱{bill.amount}. Due date: {bill.due_date.strftime('%B %d, %Y')}."
+            elif notification_type == 'reminder':
+                message += f"This is a reminder that your water bill of ₱{bill.amount} is due on {bill.due_date.strftime('%B %d, %Y')}."
+            elif notification_type == 'disconnection':
+                message += f"Your water bill of ₱{bill.amount} is overdue. Please settle immediately to avoid disconnection."
+            else:
+                message += "Water billing update."
+
+            try:
+                if client:
+                    client.messages.create(
                         body=message,
                         from_=settings.TWILIO_PHONE_NUMBER,
-                        to=bill.consumer.contact_number
+                        to=phone
                     )
+                else:
+                    # Simulate SMS by sending to an email endpoint (use console/file email backend in dev)
+                    pseudo_email = f"{phone}@sms-sim.local"
+                    email = EmailMessage(
+                        subject="SMS Simulation",
+                        body=message,
+                        from_email=default_from,
+                        to=[pseudo_email],
+                    )
+                    email.send(fail_silently=False)
 
-                    # Create notification record
-                    Notification.objects.create(
-                        bill=bill,
-                        notification_type=notification_type,
-                        message=message,
-                        sent_successfully=True
-                    )
-                except Exception as e:
-                    # Log failed notification
-                    Notification.objects.create(
-                        bill=bill,
-                        notification_type=notification_type,
-                        message=str(e),
-                        sent_successfully=False
-                    )
+                Notification.objects.create(
+                    bill=bill,
+                    notification_type=notification_type,
+                    message=message,
+                    sent_successfully=True
+                )
+            except Exception as e:
+                Notification.objects.create(
+                    bill=bill,
+                    notification_type=notification_type,
+                    message=str(e),
+                    sent_successfully=False
+                )
 
-        messages.success(request, 'Notifications sent successfully.')
+        messages.success(request, 'Notifications processed. Check logs or email backend for simulated SMS when Twilio is disabled.')
         return redirect('dashboard')
 
     return render(request, 'send_notifications.html')
@@ -581,3 +665,53 @@ def get_last_reading(request, consumer_id):
     }
     
     return JsonResponse(response_data)
+
+@login_required
+def generate_monthly_report(request):
+    report_month = request.GET.get('report_month', '')
+    report_type = request.GET.get('report_type', 'summary')
+    
+    if not report_month:
+        return HttpResponse('Please select a report month.', status=400)
+    
+    try:
+        # Parse YYYY-MM to date
+        report_date = datetime.strptime(report_month + '-01', '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        return HttpResponse('Invalid report month format.', status=400)
+    
+    # Get all bills for the selected month
+    bills = Bill.objects.filter(
+        billing_period__year=report_date.year,
+        billing_period__month=report_date.month
+    ).select_related('consumer', 'meter_reading').order_by('consumer__last_name', 'consumer__first_name')
+    
+    # Calculate statistics
+    total_bills = bills.count()
+    paid_bills = bills.filter(status='paid').count()
+    unpaid_bills = bills.filter(status='unpaid').count()
+    total_amount = bills.aggregate(Sum('amount'))['amount__sum'] or 0
+    total_paid = bills.filter(status='paid').aggregate(Sum('amount'))['amount__sum'] or 0
+    total_unpaid = bills.filter(status='unpaid').aggregate(Sum('amount'))['amount__sum'] or 0
+    total_consumption = sum([b.meter_reading.consumption for b in bills if b.meter_reading])
+    
+    # Active consumers count
+    active_consumers = Consumer.objects.filter(account_status='active').count()
+    
+    context = {
+        'report_month': report_date.strftime('%B %Y'),
+        'report_date': report_date,
+        'report_type': report_type,
+        'bills': bills,
+        'total_bills': total_bills,
+        'paid_bills': paid_bills,
+        'unpaid_bills': unpaid_bills,
+        'total_amount': total_amount,
+        'total_paid': total_paid,
+        'total_unpaid': total_unpaid,
+        'total_consumption': total_consumption,
+        'active_consumers': active_consumers,
+        'collection_rate': (paid_bills / total_bills * 100) if total_bills > 0 else 0,
+    }
+    
+    return render(request, 'monthly_report.html', context)

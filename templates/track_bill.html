@@ -7,13 +7,12 @@
 <link rel="stylesheet" href="/static/css/track_bill.css">
 <script src="/static/js/track_bill.js"></script>
 
-
 <div class="track-bill-page">
     {% if messages %}
     <div class="messages">
         {% for message in messages %}
         <div class="alert alert-{{ message.tags }} toast">
-            <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+            <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
             <p>{{ message }}</p>
         </div>
         {% endfor %}
@@ -23,85 +22,137 @@
     {% if not current_bill %}
     <div class="search-container">
         <div class="search-card">
-            <h2>Track Your Bill</h2>
-            <p class="search-subtitle">Enter your Bill ID to check your bill status</p>
+            <div class="search-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <h2>Track your Water Bill</h2>
+            <p class="search-subtitle">Enter your Bill ID to view details and payment status</p>
             <form method="GET" class="search-form">
                 <div class="input-group">
-                    <input type="text" name="bill_id" placeholder="Enter Bill ID" required>
-                    <button type="submit" class="search-btn">Track</button>
+                    <div class="input-wrapper">
+                        <i class="fas fa-receipt input-icon"></i>
+                        <input type="text" name="bill_id" placeholder="Enter Bill ID" required pattern="[0-9]+" title="Please enter a valid numeric Bill ID">
+                    </div>
+                    <button type="submit" class="search-btn">
+                        <span>Track</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
                 </div>
             </form>
         </div>
     </div>
     {% else %}
+    <div class="bill-header-section">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="status-indicator status-{{ current_bill.status }}">
+                    <i class="fas fa-{% if current_bill.status == 'paid' %}check-circle{% else %}clock{% endif %}"></i>
+                </div>
+                <div>
+                    <h1>Bill #{{ current_bill.bill_id }}</h1>
+                    <p class="header-subtitle">{{ current_bill.billing_period|date:"F Y" }}</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <a href="{% url 'track_bill' %}" class="btn-outline">
+                    <i class="fas fa-search"></i> Track Another
+                </a>
+            </div>
+        </div>
+    </div>
+
     <div class="bill-details-container">
-        <div class="bill-card">
-            <h2>Current Bill</h2>
+        <!-- Payment Summary Card -->
+        <div class="bill-card highlight-card">
+            <div class="card-header">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <h2>Payment Summary</h2>
+            </div>
+            <div class="amount-display">
+                <span class="amount-label">Total Amount Due</span>
+                <span class="amount-value">₱{{ current_bill.amount }}</span>
+            </div>
             <div class="bill-info">
                 <div class="info-row">
-                    <span class="label">Bill ID:</span>
-                    <span class="value">{{ current_bill.bill_id }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Consumer:</span>
-                    <span class="value">{{ consumer.get_full_name }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Billing Period:</span>
-                    <span class="value">{{ current_bill.billing_period|date:"F Y" }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Previous Reading:</span>
-                    <span class="value">{{ current_bill.meter_reading.previous_reading }} m³</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Current Reading:</span>
-                    <span class="value">{{ current_bill.meter_reading.current_reading }} m³</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Consumption:</span>
-                    <span class="value">{{ current_bill.meter_reading.consumption }} m³</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Amount:</span>
-                    <span class="value">₱{{ current_bill.amount }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Due Date:</span>
+                    <span class="label"><i class="fas fa-calendar-alt"></i> Due Date</span>
                     <span class="value">{{ current_bill.due_date|date:"F d, Y" }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="label">Status:</span>
-                    <span class="value status-badge status-{{ current_bill.status }}">
-                        {{ current_bill.status|title }}
+                    <span class="label"><i class="fas fa-info-circle"></i> Status</span>
+                    <span class="value">
+                        <span class="status-badge status-{{ current_bill.status }}">
+                            <i class="fas fa-{% if current_bill.status == 'paid' %}check-circle{% else %}clock{% endif %}"></i>
+                            {{ current_bill.status|title }}
+                        </span>
                     </span>
                 </div>
             </div>
         </div>
 
+        <!-- Consumption Details Card -->
         <div class="bill-card">
-            <h2>Consumer Information</h2>
+            <div class="card-header">
+                <i class="fas fa-tint"></i>
+                <h2>Water Consumption</h2>
+            </div>
+            <div class="consumption-visual">
+                <div class="meter-display">
+                    <div class="meter-item">
+                        <div class="meter-icon previous">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <span class="meter-label">Previous</span>
+                        <span class="meter-value">{{ current_bill.meter_reading.previous_reading }} m³</span>
+                    </div>
+                    <div class="meter-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                    <div class="meter-item">
+                        <div class="meter-icon current">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <span class="meter-label">Current</span>
+                        <span class="meter-value">{{ current_bill.meter_reading.current_reading }} m³</span>
+                    </div>
+                </div>
+                <div class="consumption-result">
+                    <i class="fas fa-droplet"></i>
+                    <span class="consumption-label">Total Consumption</span>
+                    <span class="consumption-value">{{ current_bill.meter_reading.consumption }} m³</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consumer Information Card -->
+        <div class="bill-card">
+            <div class="card-header">
+                <i class="fas fa-user"></i>
+                <h2>Consumer Information</h2>
+            </div>
             <div class="bill-info">
                 <div class="info-row">
-                    <span class="label">Consumer ID:</span>
+                    <span class="label"><i class="fas fa-id-card"></i> Consumer ID</span>
                     <span class="value">{{ consumer.consumer_id }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="label">Name:</span>
+                    <span class="label"><i class="fas fa-user"></i> Name</span>
                     <span class="value">{{ consumer.get_full_name }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="label">Address:</span>
+                    <span class="label"><i class="fas fa-map-marker-alt"></i> Address</span>
                     <span class="value">{{ consumer.address }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="label">Meter Number:</span>
+                    <span class="label"><i class="fas fa-gauge"></i> Meter Number</span>
                     <span class="value">{{ consumer.meter_number }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="label">Account Status:</span>
-                    <span class="value status-badge status-{{ consumer.account_status }}">
-                        {{ consumer.account_status|title }}
+                    <span class="label"><i class="fas fa-power-off"></i> Account Status</span>
+                    <span class="value">
+                        <span class="status-badge status-{{ consumer.account_status }}">
+                            <i class="fas fa-{% if consumer.account_status == 'active' %}check-circle{% else %}times-circle{% endif %}"></i>
+                            {{ consumer.account_status|title }}
+                        </span>
                     </span>
                 </div>
             </div>
@@ -109,29 +160,35 @@
     </div>
 
     <div class="bill-history-section">
-        <h2>Bill History</h2>
+        <div class="section-header">
+            <div>
+                <h2><i class="fas fa-history"></i> Billing History</h2>
+                <p class="section-subtitle">View all your previous bills and payment records</p>
+            </div>
+        </div>
         <div class="table-wrapper">
             <table class="bill-table">
                 <thead>
                     <tr>
-                        <th>Bill ID</th>
-                        <th>Billing Period</th>
-                        <th>Consumption (m³)</th>
-                        <th>Amount</th>
-                        <th>Due Date</th>
-                        <th>Status</th>
+                        <th><i class="fas fa-hashtag"></i> Bill ID</th>
+                        <th><i class="fas fa-calendar"></i> Billing Period</th>
+                        <th><i class="fas fa-tint"></i> Consumption</th>
+                        <th><i class="fas fa-peso-sign"></i> Amount</th>
+                        <th><i class="fas fa-calendar-check"></i> Due Date</th>
+                        <th><i class="fas fa-info-circle"></i> Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for bill in bills %}
-                    <tr>
-                        <td>{{ bill.bill_id }}</td>
+                    <tr class="{% if bill.bill_id == current_bill.bill_id %}current-row{% endif %}">
+                        <td><strong>{{ bill.bill_id }}</strong></td>
                         <td>{{ bill.billing_period|date:"F Y" }}</td>
-                        <td>{{ bill.meter_reading.consumption }}</td>
-                        <td>₱{{ bill.amount }}</td>
+                        <td>{{ bill.meter_reading.consumption }} m³</td>
+                        <td><strong>₱{{ bill.amount }}</strong></td>
                         <td>{{ bill.due_date|date:"M d, Y" }}</td>
                         <td>
                             <span class="status-badge status-{{ bill.status }}">
+                                <i class="fas fa-{% if bill.status == 'paid' %}check-circle{% else %}clock{% endif %}"></i>
                                 {{ bill.status|title }}
                             </span>
                         </td>

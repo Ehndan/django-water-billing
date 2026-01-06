@@ -25,11 +25,51 @@ document.addEventListener('DOMContentLoaded', function() {
     notificationTypeSelect.addEventListener('change', updateMessagePreview);
     updateMessagePreview(); // Show initial preview
     
-    // Form validation
+    // Confirmation modal handling
+    const confirmModal = document.getElementById('send-confirm-modal');
+    const confirmSendBtn = confirmModal ? confirmModal.querySelector('[data-action="confirm-send"]') : null;
+    const cancelConfirmBtn = confirmModal ? confirmModal.querySelector('[data-action="cancel-confirm"]') : null;
+    const closeConfirmBtn = confirmModal ? confirmModal.querySelector('.modal-close') : null;
+
+    function openConfirmModal() {
+        if (!confirmModal) {
+            form.submit();
+            return;
+        }
+        confirmModal.classList.add('show');
+    }
+
+    function closeConfirmModal() {
+        if (confirmModal) {
+            confirmModal.classList.remove('show');
+        }
+    }
+
     form.addEventListener('submit', function(e) {
         e.preventDefault();
-        showAlert('Are you sure you want to send notifications to all consumers with unpaid bills for the selected period?', 'warning');
-        // Continue with form submission
-        this.submit();
+        openConfirmModal();
     });
+
+    if (confirmSendBtn) {
+        confirmSendBtn.addEventListener('click', function() {
+            closeConfirmModal();
+            form.submit();
+        });
+    }
+
+    [cancelConfirmBtn, closeConfirmBtn].forEach(btn => {
+        if (btn) {
+            btn.addEventListener('click', function() {
+                closeConfirmModal();
+            });
+        }
+    });
+
+    if (confirmModal) {
+        confirmModal.addEventListener('click', function(e) {
+            if (e.target === confirmModal) {
+                closeConfirmModal();
+            }
+        });
+    }
 });
